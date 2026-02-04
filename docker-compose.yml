@@ -1,0 +1,23 @@
+services:
+  db:
+    image: postgres:16
+    container_name: cognix_db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=cognix
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - cognix_network
+
+volumes:
+  pgdata:
+
+networks:
+  cognix_network:
+
+# local connection url
+# postgresql://postgres:postgres@localhost:5433/cognix
