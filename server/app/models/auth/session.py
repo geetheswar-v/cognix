@@ -8,8 +8,7 @@ from sqlmodel import Field, Relationship, SQLModel
 
 from app.models.base import utcnow, uuid7_str
 
-if TYPE_CHECKING:
-    from app.models.auth.user import User
+from app.models.auth.user import User
 
 
 class SessionBase(SQLModel):
@@ -44,7 +43,7 @@ class Session(SessionBase, table=True):
         ),
     )
 
-    user: Optional["User"] = Relationship(back_populates="sessions")
+    user: User = Relationship(back_populates="sessions")
 
     __table_args__ = (Index("ix_session_user_id_expires_at", "user_id", "expires_at"),)
 

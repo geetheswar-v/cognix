@@ -8,8 +8,7 @@ from sqlmodel import Field, Relationship, SQLModel
 
 from app.models.base import utcnow, uuid7_str
 
-if TYPE_CHECKING:
-    from app.models.auth.user import User
+from app.models.auth.user import User
 
 
 class AccountBase(SQLModel):
@@ -51,7 +50,7 @@ class Account(AccountBase, table=True):
         ),
     )
 
-    user: Optional["User"] = Relationship(back_populates="accounts")
+    user: User = Relationship(back_populates="accounts")
 
     __table_args__ = (
         Index("ix_account_provider_account", "provider_id", "account_id"),

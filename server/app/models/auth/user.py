@@ -1,7 +1,6 @@
-from __future__ import annotations
-
 from datetime import datetime
 from typing import TYPE_CHECKING, List, Optional
+
 
 from sqlalchemy import Boolean, Column, DateTime, Text
 from sqlmodel import Field, Relationship, SQLModel

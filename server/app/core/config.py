@@ -1,5 +1,4 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import Optional
 
 class Settings(BaseSettings):
     DATABASE_URL: str
@@ -10,9 +9,11 @@ class Settings(BaseSettings):
 
     DEBUG: bool = False
 
-    EMAIL_FUNCTION: Optional[str] = None
-    EMAIL_KEY: Optional[str] = None
-    EMAIL_FROM: Optional[str] = None
+    EMAIL_FUNCTION: str
+    EMAIL_KEY: str
+    EMAIL_FROM: str
+
+    FRONTEND_URL: str
 
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=True)
 
