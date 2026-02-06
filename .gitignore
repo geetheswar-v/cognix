@@ -14,8 +14,6 @@ build/
 .DS_Store
 Thumbs.db
 *.log
-.age*
-**/sk*
 
 __pycache__/
 *.pyc
