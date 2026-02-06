@@ -1,6 +1,7 @@
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
 /// The [AppTheme] defines light and dark themes for the app.
 ///
 /// Theme setup for FlexColorScheme package v8.
@@ -19,7 +20,7 @@ abstract final class AppTheme {
   // The FlexColorScheme defined light mode ThemeData.
   static ThemeData light = FlexThemeData.light(
     // Using FlexColorScheme built-in FlexScheme enum based colors
-    scheme: FlexScheme.amber,
+    scheme: FlexScheme.deepPurple,
     // Surface color adjustments.
     surfaceMode: FlexSurfaceMode.highBackgroundLowScaffold,
     blendLevel: 2,
@@ -73,7 +74,7 @@ abstract final class AppTheme {
   // The FlexColorScheme defined dark mode ThemeData.
   static ThemeData dark = FlexThemeData.dark(
     // Using FlexColorScheme built-in FlexScheme enum based colors.
-    scheme: FlexScheme.amber,
+    scheme: FlexScheme.deepPurple,
     // Surface color adjustments.
     surfaceMode: FlexSurfaceMode.highBackgroundLowScaffold,
     blendLevel: 8,
@@ -96,7 +97,8 @@ abstract final class AppTheme {
       sliderValueTinted: true,
       inputDecoratorSchemeColor: SchemeColor.primary,
       inputDecoratorIsFilled: true,
-      inputDecoratorBackgroundAlpha: 43,
+      inputDecoratorBackgroundAlpha: 30,
+      inputDecoratorBorderSchemeColor: SchemeColor.primary,
       inputDecoratorBorderType: FlexInputBorderType.outline,
       inputDecoratorRadius: 12.0,
       inputDecoratorUnfocusedHasBorder: false,

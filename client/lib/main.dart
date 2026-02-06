@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'ui/screens/home_screen.dart';
+import 'ui/screens/signin_screen.dart';
+import 'ui/screens/signup_screen.dart';
 
 void main() => runApp(const App());
 
@@ -17,18 +19,30 @@ class App extends StatelessWidget {
           return const HomeScreen();
         },
       ),
+      GoRoute(
+        path: '/signin',
+        builder: (BuildContext context, GoRouterState state) {
+          return const SignInScreen();
+        },
+      ),
+      GoRoute(
+        path: '/signup',
+        builder: (BuildContext context, GoRouterState state) {
+          return const SignUpScreen();
+        },
+      ),
     ],
   );
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Cognix', 
+      title: 'Cognix',
       debugShowCheckedModeBanner: false,
       routerConfig: _router,
       themeMode: ThemeMode.system,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
-      );
+    );
   }
 }
