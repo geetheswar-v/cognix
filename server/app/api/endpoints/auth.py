@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from app.api.deps import get_current_session, get_current_user
 from app.core.security import create_access_token, verify_password
 from app.db.session import get_session as get_db_session
+from app.models import Session, User
 from app.schemas.auth import (
     AuthResponse,
     ForgetPasswordRequest,
@@ -16,6 +18,7 @@ from app.schemas.auth import (
 from app.services.auth import (
     create_session,
     create_user_with_account,
+    extend_session,
     get_credential_account,
     get_user_by_email,
     request_password_reset,
@@ -117,6 +120,28 @@ async def sign_in(
     session = await create_session(db, user.id, ip_address, user_agent)
 
     # Issue a short-lived JWT that references the session
+    access_token = create_access_token(user.id, session.id)
+
+    return AuthResponse(
+        user=UserResponse.model_validate(user),
+        session=SessionResponse.model_validate(session),
+        access_token=access_token,
+    )
+
+
+# ── Get Session ────────────────────────────────────────────────────────────
+@router.get("/session", response_model=AuthResponse)
+async def get_session(
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_current_session),
+    db: AsyncSession = Depends(get_db_session),
+):
+    """Retrieve current session info and issue a fresh JWT.
+
+    Used by the frontend on page load or when the JWT expires.
+    This also extends the session expiry (Better Auth 'updateAge' logic).
+    """
+    await extend_session(db, session)
     access_token = create_access_token(user.id, session.id)
 
     return AuthResponse(

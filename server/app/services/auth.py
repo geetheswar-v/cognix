@@ -168,11 +168,32 @@ async def create_session(
 
 
 async def get_valid_session(db: AsyncSession, session_id: str) -> Optional[Session]:
-    """Return a session only if it exists and has not expired."""
+    """Return a session by UUID only if it exists and has not expired."""
     session = await db.get(Session, session_id)
     if session and session.expires_at > datetime.now(timezone.utc):
         return session
     return None
+
+
+async def get_session_by_token(db: AsyncSession, token: str) -> Optional[Session]:
+    """Retrieve a session by its opaque token string."""
+    result = await db.exec(
+        select(Session).where(
+            Session.token == token,
+            Session.expires_at > datetime.now(timezone.utc),
+        )
+    )
+    return result.first()
+
+
+async def extend_session(db: AsyncSession, session: Session) -> None:
+    """Extend session expiry if it's nearing expiration (updateAge pattern)."""
+    # Better Auth style: if session is used, reset the 7-day clock
+    session.expires_at = datetime.now(timezone.utc) + timedelta(
+        days=SESSION_EXPIRE_DAYS
+    )
+    db.add(session)
+    await db.commit()
 
 
 # ---------------------------------------------------------------------------
