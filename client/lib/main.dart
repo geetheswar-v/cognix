@@ -1,12 +1,13 @@
 import 'package:cognix/ui/themes/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'ui/screens/home_screen.dart';
 import 'ui/screens/signin_screen.dart';
 import 'ui/screens/signup_screen.dart';
 
-void main() => runApp(const App());
+void main() => runApp(const ProviderScope(child: App()));
 
 class App extends StatelessWidget {
   const App({super.key});
