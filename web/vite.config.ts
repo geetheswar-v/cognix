@@ -10,12 +10,12 @@ export default defineConfig({
       target: 'react',
       autoCodeSplitting: true,
     }),
-    tailwindcss(),
     react({
       babel: {
         plugins: [['babel-plugin-react-compiler']],
       },
-    })
+    }),
+    tailwindcss(),
   ],
   resolve: {
     alias: {
