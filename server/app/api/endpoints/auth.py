@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.api.deps import get_current_session, get_current_user
@@ -46,7 +46,9 @@ def _validate_password(password: str) -> None:
         )
 
 
-# ── Sign-up ────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
+# Sign Up
+# ---------------------------------------------------------------------
 @router.post(
     "/sign-up", response_model=UserResponse, status_code=status.HTTP_201_CREATED
 )
@@ -78,11 +80,14 @@ async def sign_up(
     return UserResponse.model_validate(user)
 
 
-# ── Sign-in ────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
+# Sign In
+# ---------------------------------------------------------------------
 @router.post("/sign-in", response_model=AuthResponse)
 async def sign_in(
     data: SignInRequest,
     request: Request,
+    response: Response,
     db: AsyncSession = Depends(get_db_session),
 ):
     """Authenticate with email + password and receive a session + JWT."""
@@ -90,7 +95,7 @@ async def sign_in(
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password",
+            detail="User not found",
         )
 
     # Require verified email — resend link if needed
@@ -114,7 +119,7 @@ async def sign_in(
             detail="Invalid email or password",
         )
 
-    # Create DB session (better-auth pattern)
+    # Create DB session
     ip_address = request.client.host if request.client else None
     user_agent = request.headers.get("user-agent")
     session = await create_session(db, user.id, ip_address, user_agent)
@@ -122,6 +127,15 @@ async def sign_in(
     # Issue a short-lived JWT that references the session
     access_token = create_access_token(user.id, session.id)
 
+    response.set_cookie(
+        key="cognix-secure.session_token",
+        value=session.token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=7 * 24 * 60 * 60,
+    )
+
     return AuthResponse(
         user=UserResponse.model_validate(user),
         session=SessionResponse.model_validate(session),
@@ -129,9 +143,12 @@ async def sign_in(
     )
 
 
-# ── Get Session ────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
+# Get Session
+# ---------------------------------------------------------------------
 @router.get("/session", response_model=AuthResponse)
 async def get_session(
+    response: Response,
     user: User = Depends(get_current_user),
     session: Session = Depends(get_current_session),
     db: AsyncSession = Depends(get_db_session),
@@ -139,10 +156,19 @@ async def get_session(
     """Retrieve current session info and issue a fresh JWT.
 
     Used by the frontend on page load or when the JWT expires.
-    This also extends the session expiry (Better Auth 'updateAge' logic).
+    This also extends the session expiry.
     """
     await extend_session(db, session)
     access_token = create_access_token(user.id, session.id)
+
+    response.set_cookie(
+        key="cognix-secure.session_token",
+        value=session.token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=7 * 24 * 60 * 60,
+    )
 
     return AuthResponse(
         user=UserResponse.model_validate(user),
@@ -151,7 +177,9 @@ async def get_session(
     )
 
 
-# ── Email verification ─────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
+# Email Verfication
+# ---------------------------------------------------------------------
 @router.get("/verify", response_model=MessageResponse)
 async def verify_email(
     token: str,
@@ -167,7 +195,9 @@ async def verify_email(
     return MessageResponse(message="Email verified successfully")
 
 
-# ── Forget password ────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
+# Forget Password
+# ---------------------------------------------------------------------
 @router.post("/forget-password", response_model=MessageResponse)
 async def forget_password(
     data: ForgetPasswordRequest,
@@ -180,7 +210,9 @@ async def forget_password(
     )
 
 
-# ── Reset password ─────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
+# Reset Password
+# ---------------------------------------------------------------------
 @router.post("/reset-password", response_model=MessageResponse)
 async def reset_password_endpoint(
     data: ResetPasswordRequest,
@@ -196,3 +228,19 @@ async def reset_password_endpoint(
             detail="Invalid or expired reset token",
         )
     return MessageResponse(message="Password reset successfully")
+
+
+# ---------------------------------------------------------------------
+# Sign Out
+# ---------------------------------------------------------------------
+@router.post("/sign-out", response_model=MessageResponse)
+async def sign_out(
+    response: Response,
+    session: Session = Depends(get_current_session),
+    db: AsyncSession = Depends(get_db_session),
+):
+    """Sign out the current user by deleting their session and clearing the cookie."""
+    from app.services.auth import delete_session
+    await delete_session(db, session)
+    response.delete_cookie(key="cognix-secure.session_token")
+    return MessageResponse(message="Signed out successfully")

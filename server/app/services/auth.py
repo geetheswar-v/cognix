@@ -188,11 +188,16 @@ async def get_session_by_token(db: AsyncSession, token: str) -> Optional[Session
 
 async def extend_session(db: AsyncSession, session: Session) -> None:
     """Extend session expiry if it's nearing expiration (updateAge pattern)."""
-    # Better Auth style: if session is used, reset the 7-day clock
     session.expires_at = datetime.now(timezone.utc) + timedelta(
         days=SESSION_EXPIRE_DAYS
     )
     db.add(session)
+    await db.commit()
+
+
+async def delete_session(db: AsyncSession, session: Session) -> None:
+    """Delete a session from the database."""
+    await db.delete(session)
     await db.commit()
 
 

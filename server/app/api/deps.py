@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 import jwt as pyjwt
-from fastapi import Depends, HTTPException, Header, status
+from fastapi import Cookie, Depends, HTTPException, Header, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -17,6 +17,7 @@ security = HTTPBearer(auto_error=False)
 async def get_current_session(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
     x_session_token: Optional[str] = Header(None, alias="X-Session-Token"),
+    session_cookie: Optional[str] = Cookie(None, alias="cognix-secure.session_token"),
     db: AsyncSession = Depends(get_db_session),
 ) -> Session:
     """Retrieve the current active session."""
@@ -31,8 +32,9 @@ async def get_current_session(
         except (pyjwt.PyJWTError, AttributeError):
             pass
 
-    if not session and x_session_token:
-        session = await get_session_by_token(db, x_session_token)
+    if not session and (x_session_token or session_cookie):
+        token = x_session_token or session_cookie
+        session = await get_session_by_token(db, token)
 
     if not session or session.expires_at < datetime.now(timezone.utc):
         raise HTTPException(
