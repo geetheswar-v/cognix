@@ -1,4 +1,6 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { requireNotAuth, signUp } from '@/lib/auth'
+import { toast } from 'sonner'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { signupSchema, type SignupValues } from "@/lib/validation"
@@ -23,10 +25,14 @@ import { IconEye, IconEyeOff, IconLock, IconMail, IconUser } from "@tabler/icons
 import { useState } from 'react'
 
 export const Route = createFileRoute('/_auth/sign-up')({
+  beforeLoad: async () => {
+    await requireNotAuth()
+  },
   component: SignUpPage,
 })
 
 function SignUpPage() {
+  const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -44,8 +50,21 @@ function SignUpPage() {
     },
   });
 
-  function onSubmit(data: SignupValues) {
-    console.log(data);
+  async function onSubmit(data: SignupValues) {
+    const { error } = await signUp({
+      name: data.name,
+      email: data.email,
+      password: data.password,
+    })
+
+    if (error) {
+      const detail = (error as any)?.detail
+      toast.error(typeof detail === 'string' ? detail : "Failed to create account.")
+      return
+    }
+
+    toast.success("Account created! Please check your email to verify.")
+    navigate({ to: "/sign-in" })
   }
 
   return (

@@ -1,4 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
+import { requireNotAuth, forgetPassword } from '@/lib/auth'
+import { toast } from 'sonner'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { forgetPasswordSchema, type ForgetPasswordValues } from "@/lib/validation"
@@ -21,6 +23,9 @@ import { Button, buttonVariants } from "@/components/ui/button"
 import { IconMail, IconArrowLeft } from "@tabler/icons-react"
 
 export const Route = createFileRoute('/_auth/forget-password')({
+  beforeLoad: async () => {
+    await requireNotAuth()
+  },
   component: PasswordResetPage,
 })
 
@@ -36,8 +41,18 @@ function PasswordResetPage() {
     },
   });
 
-  function onSubmit(data: ForgetPasswordValues) {
-    console.log(data);
+  async function onSubmit(data: ForgetPasswordValues) {
+    const { error } = await forgetPassword({
+      email: data.email,
+    })
+
+    if (error) {
+      const detail = (error as any)?.detail
+      toast.error(typeof detail === 'string' ? detail : "Failed to request password reset.")
+      return
+    }
+
+    toast.success("If an account with that email exists, a password reset link has been sent.")
   }
 
   return (

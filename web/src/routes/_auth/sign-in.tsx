@@ -1,4 +1,6 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { requireNotAuth, signIn } from '@/lib/auth'
+import { toast } from 'sonner'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { signinSchema, type SigninValues } from "@/lib/validation"
@@ -23,10 +25,14 @@ import { IconEye, IconEyeOff, IconLock, IconMail } from "@tabler/icons-react"
 import { useState } from 'react'
 
 export const Route = createFileRoute('/_auth/sign-in')({
+  beforeLoad: async () => {
+    await requireNotAuth()
+  },
   component: SignInPage,
 })
 
 function SignInPage() {
+  const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false);
   const {
     control,
@@ -40,8 +46,20 @@ function SignInPage() {
     },
   });
 
-  function onSubmit(data: SigninValues) {
-    console.log(data);
+  async function onSubmit(data: SigninValues) {
+    const { error } = await signIn({
+      email: data.email,
+      password: data.password,
+    })
+
+    if (error) {
+      const detail = (error as any)?.detail
+      toast.error(typeof detail === 'string' ? detail : "Failed to sign in. Please check your credentials.")
+      return
+    }
+
+    toast.success("Signed in successfully!")
+    navigate({ to: "/" })
   }
 
   return (
