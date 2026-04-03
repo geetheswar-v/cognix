@@ -1,10 +1,6 @@
-import { requireAuth } from '@/lib/auth'
 import { createFileRoute } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/')({
-  beforeLoad: async () => {
-    await requireAuth()
-  },
+export const Route = createFileRoute('/_main/')({
   component: Index,
 })
 
