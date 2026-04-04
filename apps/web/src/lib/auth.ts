@@ -3,6 +3,7 @@ import {
     getSessionAuthSessionGet,
     signInAuthSignInPost,
     signUpAuthSignUpPost,
+    signOutAuthSignOutPost,
     forgetPasswordAuthForgetPasswordPost,
 } from '@/client/sdk.gen'
 import type { SignInRequest, SignUpRequest, ForgetPasswordRequest } from '@/client/types.gen'
@@ -13,6 +14,13 @@ export const signIn = async (data: SignInRequest) => {
 
 export const signUp = async (data: SignUpRequest) => {
     return await signUpAuthSignUpPost({ body: data, throwOnError: false })
+}
+
+export const signOut = async () => {
+    await signOutAuthSignOutPost({ throwOnError: false })
+    redirect({
+        to: '/sign-in',
+    })
 }
 
 export const forgetPassword = async (data: ForgetPasswordRequest) => {
@@ -26,7 +34,7 @@ export const getSession = async (): Promise<boolean> => {
             return false
         }
         return true
-    } catch (e) {
+    } catch {
         return false
     }
 }

@@ -1,5 +1,7 @@
 import { requireAuth } from '@/lib/auth'
 import { createFileRoute } from '@tanstack/react-router'
+import { signOut } from '@/lib/auth'
+import { Button } from '@/components/ui/button'
 
 export const Route = createFileRoute('/_main')({
   beforeLoad: async () => {
@@ -9,5 +11,7 @@ export const Route = createFileRoute('/_main')({
 })
 
 function MainLayout() {
-  return <div>Hello "/_main"!</div>
+  return <div>
+    <Button onClick={signOut}>Sign Out</Button>
+  </div>
 }
