@@ -39,6 +39,9 @@ export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
+  const callbackURL =
+    typeof window !== "undefined" ? `${window.location.origin}/` : "/"
+
   const {
     control,
     handleSubmit,
@@ -60,7 +63,7 @@ export default function SignUpPage() {
   async function onGoogleSignIn() {
     const { error } = await signIn.social({
       provider: "google",
-      callbackURL: "/",
+      callbackURL,
     })
 
     if (error) {

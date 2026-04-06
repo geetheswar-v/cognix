@@ -37,6 +37,9 @@ import { signinSchema, type SigninValues } from "@/lib/validation"
 export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false)
 
+  const callbackURL =
+    typeof window !== "undefined" ? `${window.location.origin}/` : "/"
+
   const {
     control,
     handleSubmit,
@@ -56,7 +59,7 @@ export default function SignInPage() {
   async function onGoogleSignIn() {
     const { error } = await signIn.social({
       provider: "google",
-      callbackURL: "/",
+      callbackURL,
     })
 
     if (error) {
