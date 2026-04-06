@@ -6,6 +6,8 @@ export const authRouter = new Elysia({
   prefix: "/auth",
 })
   .all("/*", ({ request }) => {
+    // consoling url for debugging
+    console.log("Auth request URL:", request.url);
     return auth.handler(request);
   })
   .macro({
