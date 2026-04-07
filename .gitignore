@@ -42,3 +42,6 @@ yarn-error.log*
 package-lock.json
 **/*.bun
 node_modules
+
+temp/
+dataset/
