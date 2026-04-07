@@ -9,6 +9,15 @@ const db = createClient({
 });
 
 const SEEDS_DIR = join(import.meta.dir, "../../../dataset/concept_seeds");
+const BLUEPRINT_PATH = join(import.meta.dir, "../../../dataset/neet_blueprint.json");
+
+function slugify(text: string) {
+  return text
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
 
 async function initDB() {
   await db.execute(`
@@ -32,18 +41,39 @@ async function seedDatabase() {
   console.log(`Scanning directory: ${SEEDS_DIR}`);
 
   try {
+    // Load and parse blueprint
+    const blueprintRaw = await readFile(BLUEPRINT_PATH, "utf-8");
+    const blueprintData = JSON.parse(blueprintRaw);
+    const blueprint = blueprintData.blueprint;
+
+    // Create a mapping of [subject][slug] -> original chapter name
+    const chapterMap: Record<string, Record<string, string>> = {};
+    for (const subjectKey of Object.keys(blueprint)) {
+      chapterMap[subjectKey] = {};
+      for (const item of blueprint[subjectKey]) {
+        const slug = slugify(item.chapter);
+        chapterMap[subjectKey][slug] = item.chapter;
+      }
+    }
+
     const subjects = await readdir(SEEDS_DIR);
 
     for (const subject of subjects) {
-      if (subject.startsWith(".")) continue; // Skip hidden files like .DS_Store
+      if (subject.startsWith(".")) continue;
 
+      // Map folder subject name to blueprint subject name (handle 'botony')
+      const blueprintSubjectKey = subject === "botony" ? "botany" : subject;
       const subjectPath = join(SEEDS_DIR, subject);
       const chapters = await readdir(subjectPath);
 
-      for (const chapter of chapters) {
-        if (chapter.startsWith(".")) continue;
+      for (const chapterSlug of chapters) {
+        if (chapterSlug.startsWith(".")) continue;
 
-        const chapterPath = join(subjectPath, chapter);
+        // Get original chapter name from map, fallback to slug if not found
+        const originalChapterName =
+          chapterMap[blueprintSubjectKey]?.[chapterSlug] || chapterSlug;
+
+        const chapterPath = join(subjectPath, chapterSlug);
         const subTopicFiles = await readdir(chapterPath);
 
         for (const file of subTopicFiles) {
@@ -65,8 +95,8 @@ async function seedDatabase() {
                       neet_traps=excluded.neet_traps,
                       distractor_concepts=excluded.distractor_concepts;`,
               args: [
-                subject,
-                chapter,
+                blueprintSubjectKey,
+                originalChapterName,
                 data.sub_topic,
                 data.core_principles,
                 JSON.stringify(data.key_formulas || []),
@@ -75,7 +105,9 @@ async function seedDatabase() {
               ],
             });
 
-            console.log(`inserted: [${subject}] ${chapter} -> ${data.sub_topic}`);
+            console.log(
+              `inserted: [${blueprintSubjectKey}] ${originalChapterName} -> ${data.sub_topic}`
+            );
           } catch (parseError) {
             console.error(`Error parsing or inserting ${filePath}:`, parseError);
           }
@@ -89,3 +121,4 @@ async function seedDatabase() {
 }
 
 seedDatabase();
+
