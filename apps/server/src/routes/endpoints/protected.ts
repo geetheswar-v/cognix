@@ -1,5 +1,6 @@
 import { Elysia, t } from 'elysia';
 import { concepts_db } from '../../db';
+import { enqueueNeetGenerationJob, getNeetGenerationStatus } from '../../lib/neet';
 
 // 3. Create the Protected Plugin
 export const privateRoutes = new Elysia({ prefix: '/private' })
@@ -79,5 +80,53 @@ JSON FORMAT:
             subject: t.String(),
             chapter: t.String(),
             subTopic: t.String()
+        })
+    })
+    .post('/neet/generate-full-paper', async ({ body, set }) => {
+        try {
+            const queued = await enqueueNeetGenerationJob({
+                jobId: body.job_id,
+                testId: body.test_id,
+                totalQuestions: body.total_questions,
+            });
+
+            set.status = 202;
+            return {
+                success: true,
+                message: queued.reused ? 'Existing job reused' : 'Generation job accepted',
+                job: queued,
+            };
+        } catch (error) {
+            set.status = 500;
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Failed to queue NEET generation job',
+            };
+        }
+    }, {
+        body: t.Object({
+            job_id: t.String(),
+            test_id: t.Optional(t.String()),
+            total_questions: t.Optional(t.Integer({ minimum: 1, maximum: 180 })),
+        })
+    })
+    .get('/neet/generation-status', async ({ query, set }) => {
+        const status = await getNeetGenerationStatus(query.job_id);
+
+        if (!status) {
+            set.status = 404;
+            return {
+                success: false,
+                error: 'Job not found',
+            };
+        }
+
+        return {
+            success: true,
+            status,
+        };
+    }, {
+        query: t.Object({
+            job_id: t.String(),
         })
     })
