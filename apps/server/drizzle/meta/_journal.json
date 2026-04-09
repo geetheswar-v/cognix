@@ -15,6 +15,13 @@
       "when": 1773897285699,
       "tag": "0001_natural_carnage",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773901185196,
+      "tag": "0002_worried_thunderball",
+      "breakpoints": true
     }
   ]
 }

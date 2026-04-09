@@ -96,6 +96,9 @@ export const neetExam = pgTable("neet_exam", {
   id: text("id").primaryKey(),
   jobId: text("job_id").notNull().unique(),
   externalTestId: text("external_test_id"),
+  examType: text("exam_type").notNull().default("full"),
+  scopeSubject: text("scope_subject"),
+  scopeChapter: text("scope_chapter"),
   status: text("status").notNull().default("queued"),
   totalQuestions: integer("total_questions").notNull().default(180),
   scoringCorrectMarks: integer("scoring_correct_marks").notNull().default(4),
@@ -110,7 +113,12 @@ export const neetExam = pgTable("neet_exam", {
     .defaultNow()
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
-});
+},
+  (table) => [
+    index("neet_exam_exam_type_idx").on(table.examType),
+    index("neet_exam_scope_subject_idx").on(table.scopeSubject),
+    index("neet_exam_scope_chapter_idx").on(table.scopeChapter),
+  ]);
 
 export const neetExamQuestion = pgTable(
   "neet_exam_question",
