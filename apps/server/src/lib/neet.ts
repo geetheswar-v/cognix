@@ -1060,3 +1060,199 @@ export async function getNeetGenerationStatus(jobId: string) {
     completedAt: exam.completedAt,
   };
 }
+
+export async function getLatestCompletedExamWithQuestions() {
+  const exam = await db.query.neetExam.findFirst({
+    where: eq(neetExam.status, 'completed'),
+    orderBy: [desc(neetExam.createdAt)],
+  });
+
+  if (!exam) return null;
+
+  const questions = await db.query.neetExamQuestion.findMany({
+    where: eq(neetExamQuestion.examId, exam.id),
+    orderBy: (table, { asc }) => [asc(table.questionNumber)],
+    with: {
+      options: {
+        orderBy: (table, { asc }) => [asc(table.optionIndex)],
+      },
+    },
+  });
+
+  return {
+    exam,
+    questions,
+  };
+}
+
+export async function submitNeetExamAnswers(input: {
+  examId: string;
+  userId: string;
+  answers: Array<{ questionId: string; selectedOptionId: string | null }>;
+}) {
+  const exam = await db.query.neetExam.findFirst({
+    where: and(eq(neetExam.id, input.examId), eq(neetExam.status, 'completed')),
+  });
+
+  if (!exam) {
+    throw new Error('Exam not found or not ready');
+  }
+
+  const questions = await db.query.neetExamQuestion.findMany({
+    where: eq(neetExamQuestion.examId, input.examId),
+  });
+
+  if (questions.length === 0) {
+    throw new Error('Exam has no questions');
+  }
+
+  const questionIds = questions.map((question) => question.id);
+
+  const options = await db.query.neetExamOption.findMany({
+    where: inArray(neetExamOption.questionId, questionIds),
+  });
+
+  const optionById = new Map(options.map((option) => [option.id, option]));
+  const correctOptionIdByQuestion = new Map<string, string>();
+
+  for (const option of options) {
+    if (option.isCorrect) {
+      correctOptionIdByQuestion.set(option.questionId, option.id);
+    }
+  }
+
+  const submittedByQuestion = new Map(input.answers.map((answer) => [answer.questionId, answer.selectedOptionId]));
+
+  for (const answer of input.answers) {
+    if (!questionIds.includes(answer.questionId)) {
+      throw new Error(`Invalid questionId: ${answer.questionId}`);
+    }
+
+    if (answer.selectedOptionId) {
+      const selected = optionById.get(answer.selectedOptionId);
+      if (!selected || selected.questionId !== answer.questionId) {
+        throw new Error(`Invalid selectedOptionId for question ${answer.questionId}`);
+      }
+    }
+  }
+
+  const existingAttempt = await db.query.neetExamAttempt.findFirst({
+    where: and(eq(neetExamAttempt.examId, input.examId), eq(neetExamAttempt.userId, input.userId)),
+  });
+
+  const attemptId = existingAttempt?.id ?? randomUUID();
+
+  let correctCount = 0;
+  let wrongCount = 0;
+  let unattemptedCount = 0;
+  let score = 0;
+
+  const evaluatedAnswers: Array<{
+    questionId: string;
+    selectedOptionId: string | null;
+    isCorrect: boolean | null;
+    marksAwarded: number;
+    subject: string;
+    chapter: string;
+    subTopic: string;
+  }> = [];
+
+  for (const question of questions) {
+    const selectedOptionId = submittedByQuestion.get(question.id) ?? null;
+    const correctOptionId = correctOptionIdByQuestion.get(question.id);
+
+    let isCorrect: boolean | null = null;
+    let marksAwarded = exam.scoringUnattemptedMarks;
+
+    if (!selectedOptionId) {
+      unattemptedCount += 1;
+      isCorrect = null;
+    } else if (selectedOptionId === correctOptionId) {
+      correctCount += 1;
+      isCorrect = true;
+      marksAwarded = exam.scoringCorrectMarks;
+    } else {
+      wrongCount += 1;
+      isCorrect = false;
+      marksAwarded = exam.scoringWrongMarks;
+    }
+
+    score += marksAwarded;
+
+    evaluatedAnswers.push({
+      questionId: question.id,
+      selectedOptionId,
+      isCorrect,
+      marksAwarded,
+      subject: question.subject,
+      chapter: question.chapter,
+      subTopic: question.subTopic,
+    });
+  }
+
+  await db.transaction(async (tx) => {
+    await tx
+      .insert(neetExamAttempt)
+      .values({
+        id: attemptId,
+        examId: input.examId,
+        userId: input.userId,
+        status: 'submitted',
+        startedAt: existingAttempt?.startedAt ?? new Date(),
+        submittedAt: new Date(),
+        score,
+        correctCount,
+        wrongCount,
+        unattemptedCount,
+      })
+      .onConflictDoUpdate({
+        target: [neetExamAttempt.examId, neetExamAttempt.userId],
+        set: {
+          status: 'submitted',
+          submittedAt: new Date(),
+          score,
+          correctCount,
+          wrongCount,
+          unattemptedCount,
+          updatedAt: new Date(),
+        },
+      });
+
+    for (const answer of evaluatedAnswers) {
+      await tx
+        .insert(neetExamAttemptAnswer)
+        .values({
+          id: randomUUID(),
+          attemptId,
+          questionId: answer.questionId,
+          selectedOptionId: answer.selectedOptionId,
+          isCorrect: answer.isCorrect,
+          marksAwarded: answer.marksAwarded,
+          subject: answer.subject,
+          chapter: answer.chapter,
+          subTopic: answer.subTopic,
+        })
+        .onConflictDoUpdate({
+          target: [neetExamAttemptAnswer.attemptId, neetExamAttemptAnswer.questionId],
+          set: {
+            selectedOptionId: answer.selectedOptionId,
+            isCorrect: answer.isCorrect,
+            marksAwarded: answer.marksAwarded,
+            subject: answer.subject,
+            chapter: answer.chapter,
+            subTopic: answer.subTopic,
+            updatedAt: new Date(),
+          },
+        });
+    }
+  });
+
+  return {
+    attemptId,
+    score,
+    correctCount,
+    wrongCount,
+    unattemptedCount,
+    totalQuestions: questions.length,
+  };
+}
