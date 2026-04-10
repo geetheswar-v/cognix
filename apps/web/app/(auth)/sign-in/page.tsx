@@ -2,12 +2,7 @@
 
 import Link from "next/link"
 import { zodResolver } from "@hookform/resolvers/zod"
-import {
-  IconEye,
-  IconEyeOff,
-  IconLock,
-  IconMail,
-} from "@tabler/icons-react"
+import { IconEye, IconEyeOff, IconLock, IconMail } from "@tabler/icons-react"
 import { Controller, useForm } from "react-hook-form"
 import { useState } from "react"
 

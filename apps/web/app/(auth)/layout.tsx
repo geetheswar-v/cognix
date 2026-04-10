@@ -26,8 +26,8 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             </h1>
             <p className="mt-6 max-w-md text-lg leading-relaxed text-white/70">
               Practice daily NEET exams, review detailed performance insights,
-              and generate AI-powered topic and subject-wise short papers in
-              one focused learning platform.
+              and generate AI-powered topic and subject-wise short papers in one
+              focused learning platform.
             </p>
           </div>
 
