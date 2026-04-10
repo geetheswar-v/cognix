@@ -8,6 +8,19 @@ import {
 } from '../../lib/neet';
 
 export const testsRoutes = new Elysia({ prefix: '/tests' })
+  .onBeforeHandle(async ({ request, set }) => {
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
+
+    if (!session) {
+      set.status = 401;
+      return {
+        success: false,
+        error: 'Unauthorized',
+      };
+    }
+  })
   .get('/latest-full-neet', async ({ set }) => {
     const latest = await getLatestCompletedExamWithQuestions();
 
