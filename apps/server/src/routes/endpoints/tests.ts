@@ -1,6 +1,11 @@
 import { Elysia, t } from 'elysia';
 import { auth } from '../../lib/auth';
-import { getLatestCompletedExamWithQuestions, submitNeetExamAnswers } from '../../lib/neet';
+import {
+  getChapterExamByTestId,
+  getLatestCompletedChapterExams,
+  getLatestCompletedExamWithQuestions,
+  submitNeetExamAnswers,
+} from '../../lib/neet';
 
 export const testsRoutes = new Elysia({ prefix: '/tests' })
   .get('/latest-full-neet', async ({ set }) => {
@@ -41,6 +46,63 @@ export const testsRoutes = new Elysia({ prefix: '/tests' })
         })),
       })),
     };
+  })
+  .get('/chapters/latest', async ({ query }) => {
+    const exams = await getLatestCompletedChapterExams(query.limit ?? 20);
+    return {
+      success: true,
+      exams,
+    };
+  }, {
+    query: t.Object({
+      limit: t.Optional(t.Integer({ minimum: 1, maximum: 100 })),
+    }),
+  })
+  .get('/chapters/:testId', async ({ params, set }) => {
+    const found = await getChapterExamByTestId(params.testId);
+
+    if (!found) {
+      set.status = 404;
+      return {
+        success: false,
+        error: 'Chapter test not found',
+      };
+    }
+
+    return {
+      success: true,
+      exam: {
+        id: found.exam.id,
+        testId: found.exam.externalTestId ?? found.exam.id,
+        examType: found.exam.examType,
+        subject: found.exam.scopeSubject,
+        chapter: found.exam.scopeChapter,
+        totalQuestions: found.exam.totalQuestions,
+        scoring: {
+          correct: found.exam.scoringCorrectMarks,
+          wrong: found.exam.scoringWrongMarks,
+          unattempted: found.exam.scoringUnattemptedMarks,
+        },
+        createdAt: found.exam.createdAt,
+      },
+      questions: found.questions.map((question) => ({
+        id: question.id,
+        questionNumber: question.questionNumber,
+        subject: question.subject,
+        chapter: question.chapter,
+        subTopic: question.subTopic,
+        questionText: question.questionText,
+        options: question.options.map((option) => ({
+          id: option.id,
+          optionIndex: option.optionIndex,
+          optionText: option.optionText,
+        })),
+      })),
+    };
+  }, {
+    params: t.Object({
+      testId: t.String(),
+    }),
   })
   .post(
     '/:examId/submit',

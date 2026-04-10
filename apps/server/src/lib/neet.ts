@@ -65,6 +65,8 @@ type JobProgress = {
   parseFailures: number;
 };
 
+type ExamType = 'full' | 'chapter';
+
 const BLUEPRINT_PATH = new URL('../../public/neet_blueprint.json', import.meta.url);
 const DEFAULT_SUBJECT_QUESTION_COUNT = 45;
 const DEFAULT_TOTAL_QUESTIONS = 180;
@@ -73,6 +75,11 @@ const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
 const LOG_DIR = new URL('../../logs/', import.meta.url);
 const LOG_FILE = new URL('neet-generation.log', LOG_DIR);
 const PARSE_ERROR_LOG_FILE = new URL('neet-generation-parse-errors.log', LOG_DIR);
+const IS_DEV_LOGGING = process.env.NODE_ENV === 'development';
+const GROQ_MAX_RPM_PER_KEY = 15;
+const GROQ_MAX_TPM_PER_KEY = 12_000;
+const GROQ_MIN_INTERVAL_MS = 4100;
+const GROQ_WINDOW_MS = 60_000;
 
 let blueprintCache: Blueprint | null = null;
 
@@ -84,8 +91,15 @@ const groqKeys = [process.env.GROQ_API_KEY, process.env.GROQ_API_KEY_ALT].filter
 );
 
 let groqRoundRobinIndex = 0;
-const groqLastCalledAt = new Map<string, number>();
-const GROQ_MIN_INTERVAL_MS = 2100;
+const groqKeyState = new Map<
+  string,
+  {
+    lastCalledAt: number;
+    minuteWindowStart: number;
+    requestCount: number;
+    tokenCount: number;
+  }
+>();
 
 function hashConcept(concept: ConceptRow) {
   return createHash('sha256')
@@ -98,6 +112,7 @@ function sleep(ms: number) {
 }
 
 async function ensureLogDir() {
+  if (!IS_DEV_LOGGING) return;
   await mkdir(LOG_DIR, { recursive: true });
 }
 
@@ -107,6 +122,7 @@ function sanitizeForLog(value: string, maxLength = 4000) {
 }
 
 async function writeStructuredLog(event: string, payload: Record<string, unknown>) {
+  if (!IS_DEV_LOGGING) return;
   await ensureLogDir();
   const line = JSON.stringify({
     ts: new Date().toISOString(),
@@ -117,6 +133,7 @@ async function writeStructuredLog(event: string, payload: Record<string, unknown
 }
 
 async function writeParseErrorLog(payload: Record<string, unknown>) {
+  if (!IS_DEV_LOGGING) return;
   await ensureLogDir();
   const line = JSON.stringify({
     ts: new Date().toISOString(),
@@ -349,22 +366,72 @@ function safeParseStringArray(value: string): string[] {
   }
 }
 
+function estimateRequestTokens(prompt: string) {
+  const chars = prompt.length;
+  return Math.ceil(chars / 4) + 700;
+}
+
+function getOrInitKeyState(key: string) {
+  const now = Date.now();
+  const current = groqKeyState.get(key);
+
+  if (!current) {
+    const created = {
+      lastCalledAt: 0,
+      minuteWindowStart: now,
+      requestCount: 0,
+      tokenCount: 0,
+    };
+    groqKeyState.set(key, created);
+    return created;
+  }
+
+  if (now - current.minuteWindowStart >= GROQ_WINDOW_MS) {
+    current.minuteWindowStart = now;
+    current.requestCount = 0;
+    current.tokenCount = 0;
+    groqKeyState.set(key, current);
+  }
+
+  return current;
+}
+
 async function nextGroqKey(): Promise<string> {
   if (groqKeys.length === 0) {
     throw new Error('Missing GROQ_API_KEY / GROQ_API_KEY_ALT');
   }
 
-  const key = groqKeys[groqRoundRobinIndex % groqKeys.length] as string;
-  groqRoundRobinIndex = (groqRoundRobinIndex + 1) % groqKeys.length;
+  const attempts = groqKeys.length;
+  for (let i = 0; i < attempts; i += 1) {
+    const idx = (groqRoundRobinIndex + i) % groqKeys.length;
+    const key = groqKeys[idx] as string;
+    const state = getOrInitKeyState(key);
 
-  const now = Date.now();
-  const lastTime = groqLastCalledAt.get(key) ?? 0;
-  const waitMs = GROQ_MIN_INTERVAL_MS - (now - lastTime);
+    if (state.requestCount < GROQ_MAX_RPM_PER_KEY && state.tokenCount < GROQ_MAX_TPM_PER_KEY) {
+      groqRoundRobinIndex = (idx + 1) % groqKeys.length;
 
-  if (waitMs > 0) await sleep(waitMs);
+      const now = Date.now();
+      const waitMs = GROQ_MIN_INTERVAL_MS - (now - state.lastCalledAt);
+      if (waitMs > 0) await sleep(waitMs);
 
-  groqLastCalledAt.set(key, Date.now());
-  return key;
+      state.lastCalledAt = Date.now();
+      groqKeyState.set(key, state);
+      return key;
+    }
+  }
+
+  const nextResetMs = Math.min(
+    ...groqKeys.map((key) => {
+      const state = getOrInitKeyState(key as string);
+      return Math.max(0, state.minuteWindowStart + GROQ_WINDOW_MS - Date.now());
+    }),
+  );
+
+  if (nextResetMs > 0) {
+    await sleep(nextResetMs + 50);
+  }
+
+  return nextGroqKey();
 }
 
 async function generateQuestionsWithGroq(params: {
@@ -381,6 +448,20 @@ async function generateQuestionsWithGroq(params: {
   const { concept, count, examId, jobId, subject, chapter, subTopic, onApiCall, onParseFailure } = params;
   const apiKey = await nextGroqKey();
   const prompt = buildQuestionPrompt(concept, count);
+  const estimatedTokens = estimateRequestTokens(prompt);
+  const keyState = getOrInitKeyState(apiKey);
+
+  if (keyState.requestCount + 1 > GROQ_MAX_RPM_PER_KEY) {
+    throw new Error('Groq per-key RPM limit reached for current window');
+  }
+
+  if (keyState.tokenCount + estimatedTokens > GROQ_MAX_TPM_PER_KEY) {
+    throw new Error('Groq per-key TPM limit reached for current window');
+  }
+
+  keyState.requestCount += 1;
+  keyState.tokenCount += estimatedTokens;
+  groqKeyState.set(apiKey, keyState);
 
   await writeStructuredLog('groq_request_start', {
     examId,
@@ -389,6 +470,9 @@ async function generateQuestionsWithGroq(params: {
     chapter,
     subTopic,
     requestedCount: count,
+    estimatedTokens,
+    keyRequestCount: keyState.requestCount,
+    keyTokenCount: keyState.tokenCount,
     model: GROQ_MODEL,
     apiKeySlot: apiKey === process.env.GROQ_API_KEY ? 'primary' : 'alternate',
   });
@@ -621,7 +705,78 @@ type PersistedQuestion = {
   options: GeneratedOption[];
 };
 
-async function generateAndPersistExam(
+type PersistContext = {
+  examId: string;
+  jobId: string;
+  examType: ExamType;
+  totalQuestions: number;
+};
+
+function buildProgressUpdaters(examId: string, jobId: string) {
+  return {
+    onApiCall: () => {
+      const progress = jobProgressMap.get(examId);
+      if (progress) {
+        progress.apiCalls += 1;
+        jobProgressMap.set(examId, progress);
+        jobProgressByJobId.set(jobId, progress);
+      }
+    },
+    onParseFailure: () => {
+      const progress = jobProgressMap.get(examId);
+      if (progress) {
+        progress.parseFailures += 1;
+        jobProgressMap.set(examId, progress);
+        jobProgressByJobId.set(jobId, progress);
+      }
+    },
+  };
+}
+
+async function persistGeneratedQuestions(context: PersistContext, generated: PersistedQuestion[]) {
+  const trimmed = generated.slice(0, context.totalQuestions);
+
+  await db.transaction(async (tx) => {
+    for (let i = 0; i < trimmed.length; i += 1) {
+      const question = trimmed[i] as PersistedQuestion;
+      const questionId = randomUUID();
+
+      await tx.insert(neetExamQuestion).values({
+        id: questionId,
+        examId: context.examId,
+        questionNumber: i + 1,
+        subject: question.subject,
+        chapter: question.chapter,
+        subTopic: question.subTopic,
+        questionText: question.questionText,
+        explanation: question.explanation,
+        difficulty: question.difficulty,
+        sourceConceptId: question.sourceConceptId,
+        sourceConceptHash: question.sourceConceptHash,
+      });
+
+      for (let optionIndex = 0; optionIndex < question.options.length; optionIndex += 1) {
+        const option = question.options[optionIndex] as GeneratedOption;
+        await tx.insert(neetExamOption).values({
+          id: randomUUID(),
+          questionId,
+          optionIndex,
+          optionText: option.text,
+          isCorrect: option.isCorrect,
+        });
+      }
+    }
+  });
+
+  await writeStructuredLog('job_generation_persisted', {
+    examId: context.examId,
+    jobId: context.jobId,
+    examType: context.examType,
+    persistedQuestions: trimmed.length,
+  });
+}
+
+async function generateAndPersistFullExam(
   examId: string,
   jobId: string,
   totalQuestions = DEFAULT_TOTAL_QUESTIONS,
@@ -839,45 +994,10 @@ async function generateAndPersistExam(
     throw new Error(`Generated only ${generated.length} questions out of ${totalQuestions}`);
   }
 
-  const trimmed = generated.slice(0, totalQuestions);
-
-  await db.transaction(async (tx) => {
-    for (let i = 0; i < trimmed.length; i += 1) {
-      const question = trimmed[i] as PersistedQuestion;
-      const questionId = randomUUID();
-
-      await tx.insert(neetExamQuestion).values({
-        id: questionId,
-        examId,
-        questionNumber: i + 1,
-        subject: question.subject,
-        chapter: question.chapter,
-        subTopic: question.subTopic,
-        questionText: question.questionText,
-        explanation: question.explanation,
-        difficulty: question.difficulty,
-        sourceConceptId: question.sourceConceptId,
-        sourceConceptHash: question.sourceConceptHash,
-      });
-
-      for (let optionIndex = 0; optionIndex < question.options.length; optionIndex += 1) {
-        const option = question.options[optionIndex] as GeneratedOption;
-        await tx.insert(neetExamOption).values({
-          id: randomUUID(),
-          questionId,
-          optionIndex,
-          optionText: option.text,
-          isCorrect: option.isCorrect,
-        });
-      }
-    }
-  });
-
-  await writeStructuredLog('job_generation_persisted', {
-    examId,
-    jobId,
-    persistedQuestions: trimmed.length,
-  });
+  await persistGeneratedQuestions(
+    { examId, jobId, examType: 'full', totalQuestions },
+    generated,
+  );
 }
 
 async function markExamFailed(examId: string, jobId: string, reason: string) {
@@ -903,6 +1023,107 @@ async function markExamFailed(examId: string, jobId: string, reason: string) {
     examId,
     jobId,
     reason,
+  });
+}
+
+async function generateAndPersistChapterExam(params: {
+  examId: string;
+  jobId: string;
+  subject: string;
+  chapter: string;
+  totalQuestions: number;
+}) {
+  const { examId, jobId, subject, chapter, totalQuestions } = params;
+
+  await writeStructuredLog('chapter_generation_started', {
+    examId,
+    jobId,
+    subject,
+    chapter,
+    totalQuestions,
+  });
+
+  const concepts = await fetchConceptsBySubjectAndChapter(subject, chapter);
+  if (concepts.length === 0) {
+    throw new Error(`No concepts found for ${subject} - ${chapter}`);
+  }
+
+  const generated: PersistedQuestion[] = [];
+  const dedupe = new Set<string>();
+  const conceptQueue = [...concepts].sort(() => Math.random() - 0.5);
+
+  const counters = buildProgressUpdaters(examId, jobId);
+
+  let guard = 0;
+  while (generated.length < totalQuestions && guard < totalQuestions * 8) {
+    guard += 1;
+    const concept = conceptQueue[(guard - 1) % conceptQueue.length] as ConceptRow;
+
+    try {
+      const batch = await generateQuestionsWithGroq({
+        concept,
+        count: 1,
+        examId,
+        jobId,
+        subject,
+        chapter,
+        subTopic: concept.sub_topic,
+        onApiCall: counters.onApiCall,
+        onParseFailure: counters.onParseFailure,
+      });
+
+      const one = batch[0];
+      if (!one || !validateGeneratedQuestion(one)) continue;
+
+      const dedupeKey = normalizeQuestionKey(one.question);
+      if (dedupe.has(dedupeKey)) continue;
+
+      dedupe.add(dedupeKey);
+      generated.push({
+        subject,
+        chapter,
+        subTopic: concept.sub_topic,
+        questionText: one.question.trim(),
+        explanation: one.explanation.trim(),
+        difficulty: one.difficulty,
+        sourceConceptId: concept.id,
+        sourceConceptHash: hashConcept(concept),
+        options: one.options,
+      });
+
+      const progress = jobProgressMap.get(examId);
+      if (progress) {
+        progress.generatedCount = generated.length;
+        jobProgressMap.set(examId, progress);
+        jobProgressByJobId.set(jobId, progress);
+      }
+    } catch (error) {
+      await writeStructuredLog('chapter_generation_attempt_failed', {
+        examId,
+        jobId,
+        subject,
+        chapter,
+        attempt: guard,
+        error: error instanceof Error ? error.message : 'Unknown chapter generation error',
+      });
+    }
+  }
+
+  if (generated.length < totalQuestions) {
+    throw new Error(`Generated only ${generated.length} questions out of ${totalQuestions} for chapter exam`);
+  }
+
+  await persistGeneratedQuestions(
+    { examId, jobId, examType: 'chapter', totalQuestions },
+    generated,
+  );
+
+  await writeStructuredLog('chapter_generation_completed', {
+    examId,
+    jobId,
+    subject,
+    chapter,
+    generatedCount: generated.length,
   });
 }
 
@@ -944,6 +1165,7 @@ export async function enqueueNeetGenerationJob(input: {
     id: examId,
     jobId: input.jobId,
     externalTestId: input.testId,
+    examType: 'full',
     status: 'running',
     totalQuestions,
     startedAt: new Date(),
@@ -977,7 +1199,7 @@ export async function enqueueNeetGenerationJob(input: {
 
   void (async () => {
     try {
-      await generateAndPersistExam(examId, input.jobId, totalQuestions);
+      await generateAndPersistFullExam(examId, input.jobId, totalQuestions);
       await db
         .update(neetExam)
         .set({
@@ -1002,6 +1224,112 @@ export async function enqueueNeetGenerationJob(input: {
           apiCalls: progress.apiCalls,
           parseFailures: progress.parseFailures,
         });
+      }
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : 'Unknown generation error';
+      await markExamFailed(examId, input.jobId, reason);
+    }
+  })();
+
+  return {
+    examId,
+    jobId: input.jobId,
+    status: 'running',
+    reused: false,
+  };
+}
+
+export async function enqueueChapterExamGenerationJob(input: {
+  jobId: string;
+  testId?: string;
+  subject: string;
+  chapter: string;
+  totalQuestions: number;
+}) {
+  if (input.totalQuestions < 1 || input.totalQuestions > 15) {
+    throw new Error('Chapter exam questions must be between 1 and 15');
+  }
+
+  const existing = await db.query.neetExam.findFirst({
+    where: eq(neetExam.jobId, input.jobId),
+  });
+
+  if (existing) {
+    await writeStructuredLog('job_reused', {
+      examId: existing.id,
+      jobId: existing.jobId,
+      status: existing.status,
+    });
+
+    return {
+      examId: existing.id,
+      jobId: existing.jobId,
+      status: existing.status,
+      reused: true,
+    };
+  }
+
+  const examId = randomUUID();
+  await db.insert(neetExam).values({
+    id: examId,
+    jobId: input.jobId,
+    externalTestId: input.testId,
+    examType: 'chapter',
+    scopeSubject: input.subject,
+    scopeChapter: input.chapter,
+    status: 'running',
+    totalQuestions: input.totalQuestions,
+    startedAt: new Date(),
+    blueprintVersion: 'neet_blueprint.json',
+  });
+
+  const progress: JobProgress = {
+    status: 'running',
+    generatedCount: 0,
+    totalQuestions: input.totalQuestions,
+    examId,
+    apiCalls: 0,
+    parseFailures: 0,
+  };
+
+  jobProgressMap.set(examId, progress);
+  jobProgressByJobId.set(input.jobId, progress);
+
+  await writeStructuredLog('job_enqueued', {
+    examId,
+    jobId: input.jobId,
+    examType: 'chapter',
+    testId: input.testId ?? null,
+    totalQuestions: input.totalQuestions,
+    subject: input.subject,
+    chapter: input.chapter,
+  });
+
+  void (async () => {
+    try {
+      await generateAndPersistChapterExam({
+        examId,
+        jobId: input.jobId,
+        subject: input.subject,
+        chapter: input.chapter,
+        totalQuestions: input.totalQuestions,
+      });
+
+      await db
+        .update(neetExam)
+        .set({
+          status: 'completed',
+          completedAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(neetExam.id, examId));
+
+      const inMemory = jobProgressMap.get(examId);
+      if (inMemory) {
+        inMemory.status = 'completed';
+        inMemory.generatedCount = input.totalQuestions;
+        jobProgressMap.set(examId, inMemory);
+        jobProgressByJobId.set(input.jobId, inMemory);
       }
     } catch (error) {
       const reason = error instanceof Error ? error.message : 'Unknown generation error';
@@ -1063,7 +1391,7 @@ export async function getNeetGenerationStatus(jobId: string) {
 
 export async function getLatestCompletedExamWithQuestions() {
   const exam = await db.query.neetExam.findFirst({
-    where: eq(neetExam.status, 'completed'),
+    where: and(eq(neetExam.status, 'completed'), eq(neetExam.examType, 'full')),
     orderBy: [desc(neetExam.createdAt)],
   });
 
@@ -1083,6 +1411,43 @@ export async function getLatestCompletedExamWithQuestions() {
     exam,
     questions,
   };
+}
+
+export async function getLatestCompletedChapterExams(limit = 20) {
+  const exams = await db.query.neetExam.findMany({
+    where: and(eq(neetExam.status, 'completed'), eq(neetExam.examType, 'chapter')),
+    orderBy: [desc(neetExam.createdAt)],
+    limit,
+  });
+
+  return exams.map((exam) => ({
+    testId: exam.externalTestId ?? exam.id,
+    examId: exam.id,
+    subject: exam.scopeSubject,
+    chapter: exam.scopeChapter,
+    questions: exam.totalQuestions,
+    createdAt: exam.createdAt,
+  }));
+}
+
+export async function getChapterExamByTestId(testId: string) {
+  const exam = await db.query.neetExam.findFirst({
+    where: and(eq(neetExam.status, 'completed'), eq(neetExam.examType, 'chapter'), eq(neetExam.externalTestId, testId)),
+  });
+
+  if (!exam) return null;
+
+  const questions = await db.query.neetExamQuestion.findMany({
+    where: eq(neetExamQuestion.examId, exam.id),
+    orderBy: (table, { asc }) => [asc(table.questionNumber)],
+    with: {
+      options: {
+        orderBy: (table, { asc }) => [asc(table.optionIndex)],
+      },
+    },
+  });
+
+  return { exam, questions };
 }
 
 export async function submitNeetExamAnswers(input: {

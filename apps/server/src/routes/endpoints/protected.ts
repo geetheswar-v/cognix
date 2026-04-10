@@ -1,6 +1,6 @@
 import { Elysia, t } from 'elysia';
 import { concepts_db } from '../../db';
-import { enqueueNeetGenerationJob, getNeetGenerationStatus } from '../../lib/neet';
+import { enqueueChapterExamGenerationJob, enqueueNeetGenerationJob, getNeetGenerationStatus } from '../../lib/neet';
 
 // 3. Create the Protected Plugin
 export const privateRoutes = new Elysia({ prefix: '/private' })
@@ -128,5 +128,37 @@ JSON FORMAT:
     }, {
         query: t.Object({
             job_id: t.String(),
+        })
+    })
+    .post('/neet/generate-chapter-paper', async ({ body, set }) => {
+        try {
+            const queued = await enqueueChapterExamGenerationJob({
+                jobId: body.job_id,
+                testId: body.test_id,
+                subject: body.subject,
+                chapter: body.chapter,
+                totalQuestions: body.total_questions,
+            });
+
+            set.status = 202;
+            return {
+                success: true,
+                message: queued.reused ? 'Existing chapter job reused' : 'Chapter generation job accepted',
+                job: queued,
+            };
+        } catch (error) {
+            set.status = 500;
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Failed to queue chapter generation job',
+            };
+        }
+    }, {
+        body: t.Object({
+            job_id: t.String(),
+            test_id: t.Optional(t.String()),
+            subject: t.String(),
+            chapter: t.String(),
+            total_questions: t.Integer({ minimum: 1, maximum: 15 }),
         })
     })
