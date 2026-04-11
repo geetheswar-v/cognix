@@ -4,6 +4,7 @@ import {
   getChapterExamByTestId,
   getLatestCompletedChapterExams,
   getLatestCompletedExamWithQuestions,
+  getSubjectChaptersWithLatestTest,
   submitNeetExamAnswers,
 } from '../../lib/neet';
 
@@ -69,6 +70,27 @@ export const testsRoutes = new Elysia({ prefix: '/tests' })
   }, {
     query: t.Object({
       limit: t.Optional(t.Integer({ minimum: 1, maximum: 100 })),
+    }),
+  })
+  .get('/subjects/:subject/chapters', async ({ params, set }) => {
+    const normalized = params.subject.toLowerCase();
+    if (!['physics', 'chemistry', 'botany', 'zoology'].includes(normalized)) {
+      set.status = 400;
+      return {
+        success: false,
+        error: 'Invalid subject',
+      };
+    }
+
+    const chapters = await getSubjectChaptersWithLatestTest(normalized);
+    return {
+      success: true,
+      subject: normalized,
+      chapters,
+    };
+  }, {
+    params: t.Object({
+      subject: t.String(),
     }),
   })
   .get('/chapters/:testId', async ({ params, set }) => {

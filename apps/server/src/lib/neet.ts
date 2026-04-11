@@ -1430,6 +1430,52 @@ export async function getLatestCompletedChapterExams(limit = 20) {
   }));
 }
 
+export async function getSubjectChaptersWithLatestTest(subject: string) {
+  const concepts = await concepts_db.execute({
+    sql: `SELECT DISTINCT chapter FROM concepts WHERE lower(subject) = lower(?) ORDER BY chapter ASC`,
+    args: [subject],
+  });
+
+  const chapters = concepts.rows
+    .map((row) => {
+      const chapter = row.chapter;
+      if (typeof chapter === 'string' && chapter.trim().length > 0) {
+        return chapter.trim();
+      }
+      return null;
+    })
+    .filter((chapter): chapter is string => Boolean(chapter));
+
+  const latestChapterExams = await db.query.neetExam.findMany({
+    where: and(
+      eq(neetExam.status, 'completed'),
+      eq(neetExam.examType, 'chapter'),
+      eq(neetExam.scopeSubject, subject),
+    ),
+    orderBy: [desc(neetExam.createdAt)],
+  });
+
+  const latestByChapter = new Map<string, (typeof latestChapterExams)[number]>();
+  for (const exam of latestChapterExams) {
+    const chapter = exam.scopeChapter;
+    if (!chapter) continue;
+    if (!latestByChapter.has(chapter)) {
+      latestByChapter.set(chapter, exam);
+    }
+  }
+
+  return chapters.map((chapter) => {
+    const latest = latestByChapter.get(chapter);
+    return {
+      chapter,
+      hasLatestTest: Boolean(latest),
+      latestTestId: latest?.externalTestId ?? latest?.id ?? null,
+      latestExamId: latest?.id ?? null,
+      latestCreatedAt: latest?.createdAt ?? null,
+    };
+  });
+}
+
 export async function getChapterExamByTestId(testId: string) {
   const exam = await db.query.neetExam.findFirst({
     where: and(eq(neetExam.status, 'completed'), eq(neetExam.examType, 'chapter'), eq(neetExam.externalTestId, testId)),

@@ -1,10 +1,14 @@
-import { PlaceholderScreen } from "@/components/main/placeholder-screen"
+import { SubjectChaptersScreen } from "@/components/main/subject-chapters-screen"
+import type { SubjectChaptersResponse } from "@/components/main/types"
+import { apiFetch } from "@/lib/server-api"
 
-export default function ZoologyPage() {
-  return (
-    <PlaceholderScreen
-      title="Zoology"
-      description="Zoology chapter tests and chapter-level progress will be shown here."
-    />
-  )
+async function fetchData() {
+  const response = await apiFetch("/api/tests/subjects/zoology/chapters")
+  if (!response.ok) return null
+  return (await response.json()) as SubjectChaptersResponse
+}
+
+export default async function ZoologyPage() {
+  const data = await fetchData()
+  return <SubjectChaptersScreen subjectId="zoology" data={data} />
 }
