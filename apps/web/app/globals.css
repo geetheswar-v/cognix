@@ -11,8 +11,8 @@
     --card-foreground: oklch(0.141 0.005 285.823);
     --popover: oklch(1 0 0);
     --popover-foreground: oklch(0.141 0.005 285.823);
-    --primary: oklch(0.496 0.265 301.924);
-    --primary-foreground: oklch(0.977 0.014 308.299);
+    --primary: oklch(0.57 0.205 261.2);
+    --primary-foreground: oklch(0.985 0.01 255);
     --secondary: oklch(0.967 0.001 286.375);
     --secondary-foreground: oklch(0.21 0.006 285.885);
     --muted: oklch(0.967 0.001 286.375);
@@ -22,21 +22,27 @@
     --destructive: oklch(0.577 0.245 27.325);
     --border: oklch(0.92 0.004 286.32);
     --input: oklch(0.92 0.004 286.32);
-    --ring: oklch(0.705 0.015 286.067);
-    --chart-1: oklch(0.827 0.119 306.383);
-    --chart-2: oklch(0.627 0.265 303.9);
-    --chart-3: oklch(0.558 0.288 302.321);
-    --chart-4: oklch(0.496 0.265 301.924);
-    --chart-5: oklch(0.438 0.218 303.724);
+    --ring: oklch(0.63 0.145 261);
+    --chart-1: oklch(0.64 0.205 261);
+    --chart-2: oklch(0.72 0.19 58);
+    --chart-3: oklch(0.7 0.18 156);
+    --chart-4: oklch(0.63 0.19 334);
+    --chart-5: oklch(0.6 0.22 22);
     --radius: 0.625rem;
     --sidebar: oklch(0.985 0 0);
     --sidebar-foreground: oklch(0.141 0.005 285.823);
-    --sidebar-primary: oklch(0.558 0.288 302.321);
-    --sidebar-primary-foreground: oklch(0.977 0.014 308.299);
+    --sidebar-primary: oklch(0.57 0.205 261.2);
+    --sidebar-primary-foreground: oklch(0.985 0.01 255);
     --sidebar-accent: oklch(0.967 0.001 286.375);
     --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
     --sidebar-border: oklch(0.92 0.004 286.32);
-    --sidebar-ring: oklch(0.705 0.015 286.067);
+    --sidebar-ring: oklch(0.63 0.145 261);
+    --subject-physics: oklch(0.57 0.21 261);
+    --subject-chemistry: oklch(0.71 0.18 58);
+    --subject-botany: oklch(0.67 0.17 152);
+    --subject-zoology: oklch(0.63 0.19 334);
+    --hero-from: oklch(0.55 0.19 261);
+    --hero-to: oklch(0.64 0.16 227);
 }
 
 .dark {
@@ -46,8 +52,8 @@
     --card-foreground: oklch(0.985 0 0);
     --popover: oklch(0.21 0.006 285.885);
     --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.438 0.218 303.724);
-    --primary-foreground: oklch(0.977 0.014 308.299);
+    --primary: oklch(0.64 0.195 261);
+    --primary-foreground: oklch(0.19 0.03 258);
     --secondary: oklch(0.274 0.006 286.033);
     --secondary-foreground: oklch(0.985 0 0);
     --muted: oklch(0.274 0.006 286.033);
@@ -57,20 +63,20 @@
     --destructive: oklch(0.704 0.191 22.216);
     --border: oklch(1 0 0 / 10%);
     --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.552 0.016 285.938);
-    --chart-1: oklch(0.827 0.119 306.383);
-    --chart-2: oklch(0.627 0.265 303.9);
-    --chart-3: oklch(0.558 0.288 302.321);
-    --chart-4: oklch(0.496 0.265 301.924);
-    --chart-5: oklch(0.438 0.218 303.724);
+    --ring: oklch(0.66 0.14 261);
+    --chart-1: oklch(0.64 0.205 261);
+    --chart-2: oklch(0.72 0.19 58);
+    --chart-3: oklch(0.7 0.18 156);
+    --chart-4: oklch(0.63 0.19 334);
+    --chart-5: oklch(0.6 0.22 22);
     --sidebar: oklch(0.21 0.006 285.885);
     --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.627 0.265 303.9);
-    --sidebar-primary-foreground: oklch(0.977 0.014 308.299);
+    --sidebar-primary: oklch(0.64 0.195 261);
+    --sidebar-primary-foreground: oklch(0.19 0.03 258);
     --sidebar-accent: oklch(0.274 0.006 286.033);
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.552 0.016 285.938);
+    --sidebar-ring: oklch(0.66 0.14 261);
 }
 
 @theme inline {
@@ -125,4 +131,16 @@
   html {
     @apply font-sans;
     }
+  .subject-physics {
+    color: var(--subject-physics);
+  }
+  .subject-chemistry {
+    color: var(--subject-chemistry);
+  }
+  .subject-botany {
+    color: var(--subject-botany);
+  }
+  .subject-zoology {
+    color: var(--subject-zoology);
+  }
 }

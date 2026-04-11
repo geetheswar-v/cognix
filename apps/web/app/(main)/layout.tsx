@@ -1,20 +1,16 @@
 import { getServerSession } from "@/lib/auth"
-import { redirect } from "next/navigation";
+import { redirect } from "next/navigation"
+import { AppShell } from "@/components/main/app-shell"
 
-export default function MainLayout({
+export default async function MainLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const session = await getServerSession()
+  if (!session) {
+    redirect("/sign-in")
+  }
 
-    const session = getServerSession();
-    if (!session) {
-      redirect("/sign-in");
-    }
-
-    return (
-        <>
-        {children}
-        </>
-    )
+  return <AppShell userName={session.user.name}>{children}</AppShell>
 }
