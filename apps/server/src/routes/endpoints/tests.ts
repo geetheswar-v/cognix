@@ -2,6 +2,7 @@ import { Elysia, t } from 'elysia';
 import { auth } from '../../lib/auth';
 import {
   getCompletedExamWithQuestionsByExamId,
+  getAttemptedChapterTestReview,
   getChapterExamByTestId,
   getLatestCompletedChapterExams,
   getLatestCompletedExamWithQuestions,
@@ -134,6 +135,56 @@ export const testsRoutes = new Elysia({ prefix: '/tests' })
           optionText: option.optionText,
         })),
       })),
+    };
+  }, {
+    params: t.Object({
+      testId: t.String(),
+    }),
+  })
+  .get('/chapters/:testId/review', async ({ params, request, set }) => {
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
+
+    if (!session) {
+      set.status = 401;
+      return {
+        success: false,
+        error: 'Unauthorized',
+      };
+    }
+
+    const review = await getAttemptedChapterTestReview({
+      userId: session.user.id,
+      testId: params.testId,
+    });
+
+    if (!review) {
+      set.status = 404;
+      return {
+        success: false,
+        error: 'Attempt not found for this chapter test',
+      };
+    }
+
+    return {
+      success: true,
+      exam: {
+        id: review.exam.id,
+        testId: review.exam.externalTestId ?? review.exam.id,
+        subject: review.exam.scopeSubject,
+        chapter: review.exam.scopeChapter,
+        totalQuestions: review.exam.totalQuestions,
+      },
+      attempt: {
+        id: review.attempt.id,
+        submittedAt: review.attempt.submittedAt,
+        score: review.attempt.score,
+        correctCount: review.attempt.correctCount,
+        wrongCount: review.attempt.wrongCount,
+        unattemptedCount: review.attempt.unattemptedCount,
+      },
+      questions: review.questions,
     };
   }, {
     params: t.Object({

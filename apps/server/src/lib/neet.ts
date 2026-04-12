@@ -1687,3 +1687,63 @@ export async function submitNeetExamAnswers(input: {
     totalQuestions: questions.length,
   };
 }
+
+export async function getAttemptedChapterTestReview(params: {
+  userId: string;
+  testId: string;
+}) {
+  const exam = await db.query.neetExam.findFirst({
+    where: and(
+      eq(neetExam.status, 'completed'),
+      eq(neetExam.examType, 'chapter'),
+      eq(neetExam.externalTestId, params.testId),
+    ),
+  });
+
+  if (!exam) return null;
+
+  const attempt = await db.query.neetExamAttempt.findFirst({
+    where: and(eq(neetExamAttempt.examId, exam.id), eq(neetExamAttempt.userId, params.userId)),
+  });
+
+  if (!attempt) return null;
+
+  const questions = await db.query.neetExamQuestion.findMany({
+    where: eq(neetExamQuestion.examId, exam.id),
+    orderBy: (table, { asc }) => [asc(table.questionNumber)],
+    with: {
+      options: {
+        orderBy: (table, { asc }) => [asc(table.optionIndex)],
+      },
+    },
+  });
+
+  const answers = await db.query.neetExamAttemptAnswer.findMany({
+    where: eq(neetExamAttemptAnswer.attemptId, attempt.id),
+  });
+
+  const answerByQuestionId = new Map(answers.map((answer) => [answer.questionId, answer]));
+
+  return {
+    exam,
+    attempt,
+    questions: questions.map((question) => {
+      const selected = answerByQuestionId.get(question.id);
+      const correct = question.options.find((option) => option.isCorrect);
+
+      return {
+        id: question.id,
+        questionNumber: question.questionNumber,
+        questionText: question.questionText,
+        explanation: question.explanation,
+        selectedOptionId: selected?.selectedOptionId ?? null,
+        correctOptionId: correct?.id ?? null,
+        options: question.options.map((option) => ({
+          id: option.id,
+          optionIndex: option.optionIndex,
+          optionText: option.optionText,
+        })),
+      };
+    }),
+  };
+}

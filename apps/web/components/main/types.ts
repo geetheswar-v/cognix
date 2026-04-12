@@ -100,3 +100,31 @@ export type ExamSubmitResponse = {
   }
   error?: string
 }
+
+export type ChapterReviewResponse = {
+  success: boolean
+  exam?: {
+    id: string
+    testId: string
+    subject: string | null
+    chapter: string | null
+    totalQuestions: number
+  }
+  attempt?: {
+    id: string
+    submittedAt: string | null
+    score: number
+    correctCount: number
+    wrongCount: number
+    unattemptedCount: number
+  }
+  questions?: Array<{
+    id: string
+    questionNumber: number
+    questionText: string
+    explanation: string
+    selectedOptionId: string | null
+    correctOptionId: string | null
+    options: ExamQuestionOption[]
+  }>
+}
