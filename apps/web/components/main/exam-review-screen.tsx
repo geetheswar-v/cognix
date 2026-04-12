@@ -50,9 +50,9 @@ export function ExamReviewScreen({ title, questions }: ExamReviewScreenProps) {
                   key={option.id}
                   className={
                     isCorrect
-                      ? "flex items-start gap-2 rounded-xl border border-emerald-300 bg-emerald-50 p-3 text-emerald-800"
+                      ? "flex items-start gap-2 rounded-xl border border-emerald-300 bg-emerald-100/80 p-3 text-emerald-900 dark:border-emerald-700 dark:bg-emerald-950/35 dark:text-emerald-300"
                       : isSelected
-                        ? "flex items-start gap-2 rounded-xl border border-rose-300 bg-rose-50 p-3 text-rose-800"
+                        ? "flex items-start gap-2 rounded-xl border border-rose-300 bg-rose-100/80 p-3 text-rose-900 dark:border-rose-700 dark:bg-rose-950/35 dark:text-rose-300"
                         : "flex items-start gap-2 rounded-xl border border-border/70 bg-background p-3 text-foreground"
                   }
                 >

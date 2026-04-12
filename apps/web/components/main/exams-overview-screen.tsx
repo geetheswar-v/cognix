@@ -1,9 +1,9 @@
 import Link from "next/link"
 import { IconArrowRight, IconBolt, IconFlask2, IconHistory } from "@tabler/icons-react"
 
-import { buttonVariants } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import type { ChapterExamListResponse, LatestFullExamResponse } from "@/components/main/types"
+import { linkButtonOutline, linkButtonPrimary } from "@/lib/button-link-styles"
 import { cn } from "@/lib/utils"
 
 type ExamsOverviewScreenProps = {
@@ -48,19 +48,19 @@ export function ExamsOverviewScreen({
                     Created on {formatDate(fullExam.createdAt)}
                   </p>
                 </div>
-                <Link href="/exams/take/full" className={cn(buttonVariants(), "rounded-2xl")}>
+                <Link href="/exams/take/full" className={cn(linkButtonPrimary, "rounded-2xl")}>
                   Start Full Test
                   <IconArrowRight />
                 </Link>
               </div>
               <div className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-2xl bg-emerald-50 p-3 text-sm text-emerald-700">
+                <div className="rounded-2xl bg-emerald-100/80 p-3 text-sm text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
                   +{fullExam.scoring.correct} marks for correct
                 </div>
-                <div className="rounded-2xl bg-rose-50 p-3 text-sm text-rose-700">
+                <div className="rounded-2xl bg-rose-100/80 p-3 text-sm text-rose-800 dark:bg-rose-950/40 dark:text-rose-300">
                   {fullExam.scoring.wrong} marks for wrong
                 </div>
-                <div className="rounded-2xl bg-slate-100 p-3 text-sm text-slate-700">
+                <div className="rounded-2xl bg-slate-200/80 p-3 text-sm text-slate-800 dark:bg-slate-800/70 dark:text-slate-200">
                   {fullExam.scoring.unattempted} for unattempted
                 </div>
               </div>
@@ -100,7 +100,7 @@ export function ExamsOverviewScreen({
                   </div>
                   <Link
                     href={`/exams/review/${exam.testId}`}
-                    className={cn(buttonVariants({ variant: "outline" }), "rounded-2xl")}
+                    className={cn(linkButtonOutline, "rounded-2xl")}
                   >
                     <IconFlask2 />
                     Review Attempt

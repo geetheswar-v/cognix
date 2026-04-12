@@ -1,9 +1,9 @@
 import Link from "next/link"
 import { IconArrowRight, IconBook2 } from "@tabler/icons-react"
 
-import { buttonVariants } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { SUBJECTS, type SubjectChaptersResponse, type SubjectId } from "@/components/main/types"
+import { linkButtonPrimary } from "@/lib/button-link-styles"
 import { cn } from "@/lib/utils"
 
 type SubjectChaptersScreenProps = {
@@ -61,7 +61,7 @@ export function SubjectChaptersScreen({ subjectId, data }: SubjectChaptersScreen
                 {chapter.latestExamId ? (
                   <Link
                     href={`/exams/take/${chapter.latestExamId}`}
-                    className={cn(buttonVariants(), "w-full rounded-2xl")}
+                    className={cn(linkButtonPrimary, "w-full rounded-2xl")}
                   >
                     Start Test
                     <IconArrowRight />
@@ -69,7 +69,7 @@ export function SubjectChaptersScreen({ subjectId, data }: SubjectChaptersScreen
                 ) : (
                   <span
                     className={cn(
-                      buttonVariants(),
+                      linkButtonPrimary,
                       "pointer-events-none w-full rounded-2xl opacity-50"
                     )}
                   >

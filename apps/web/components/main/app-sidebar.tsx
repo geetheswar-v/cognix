@@ -110,7 +110,7 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton
               onClick={() => signOut()}
-              className="text-rose-700 hover:bg-rose-50 hover:text-rose-800"
+              className="text-rose-700 hover:bg-rose-100/70 hover:text-rose-900 dark:text-rose-300 dark:hover:bg-rose-950/40 dark:hover:text-rose-200"
             >
               <IconLogout />
               <span>Sign Out</span>

@@ -113,19 +113,19 @@ export function ExamTakingClient({ exam, questions }: ExamTakingClientProps) {
               Attempt ID: <span className="font-mono text-xs">{result.attemptId}</span>
             </p>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="rounded-2xl bg-slate-100 p-4">
+              <div className="rounded-2xl bg-slate-200/80 p-4 dark:bg-slate-800/70">
                 <p className="text-xs text-muted-foreground uppercase">Score</p>
                 <p className="mt-1 text-2xl font-semibold">{result.score}</p>
               </div>
-              <div className="rounded-2xl bg-emerald-50 p-4 text-emerald-700">
+              <div className="rounded-2xl bg-emerald-100/80 p-4 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
                 <p className="text-xs uppercase">Correct</p>
                 <p className="mt-1 text-2xl font-semibold">{result.correctCount}</p>
               </div>
-              <div className="rounded-2xl bg-rose-50 p-4 text-rose-700">
+              <div className="rounded-2xl bg-rose-100/80 p-4 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300">
                 <p className="text-xs uppercase">Wrong</p>
                 <p className="mt-1 text-2xl font-semibold">{result.wrongCount}</p>
               </div>
-              <div className="rounded-2xl bg-amber-50 p-4 text-amber-700">
+              <div className="rounded-2xl bg-amber-100/80 p-4 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
                 <p className="text-xs uppercase">Unattempted</p>
                 <p className="mt-1 text-2xl font-semibold">{result.unattemptedCount}</p>
               </div>
@@ -159,9 +159,9 @@ export function ExamTakingClient({ exam, questions }: ExamTakingClientProps) {
               Question {currentIndex + 1} of {questions.length}
             </p>
             <div className="flex gap-2 text-xs">
-              <span className="rounded-md bg-emerald-50 px-2 py-1 text-emerald-700">+{exam.scoring.correct}</span>
-              <span className="rounded-md bg-rose-50 px-2 py-1 text-rose-700">{exam.scoring.wrong}</span>
-              <span className="rounded-md bg-slate-100 px-2 py-1 text-slate-700">{exam.scoring.unattempted}</span>
+              <span className="rounded-md bg-emerald-100/80 px-2 py-1 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">+{exam.scoring.correct}</span>
+              <span className="rounded-md bg-rose-100/80 px-2 py-1 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300">{exam.scoring.wrong}</span>
+              <span className="rounded-md bg-slate-200/80 px-2 py-1 text-slate-800 dark:bg-slate-800/70 dark:text-slate-200">{exam.scoring.unattempted}</span>
             </div>
           </div>
 
@@ -267,7 +267,7 @@ export function ExamTakingClient({ exam, questions }: ExamTakingClientProps) {
                   : "bg-emerald-600 text-white"
                 : item.isMarked
                   ? "bg-fuchsia-100 text-fuchsia-700"
-                  : "bg-slate-100 text-slate-700"
+                  : "bg-slate-200/80 text-slate-800 dark:bg-slate-800/70 dark:text-slate-200"
 
               return (
                 <button
@@ -308,7 +308,7 @@ export function ExamTakingClient({ exam, questions }: ExamTakingClientProps) {
                 Attempted {attemptedCount} / {questions.length}. Unanswered: {unattemptedCount}. Marked for review: {reviewCount}.
               </p>
               {submitError ? (
-                <p className="rounded-xl bg-rose-50 p-3 text-sm text-rose-700">{submitError}</p>
+                <p className="rounded-xl bg-rose-100/80 p-3 text-sm text-rose-800 dark:bg-rose-950/40 dark:text-rose-300">{submitError}</p>
               ) : null}
               <div className="flex justify-end gap-2">
                 <Button variant="outline" className="rounded-2xl" onClick={() => setShowSubmitPrompt(false)}>

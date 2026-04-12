@@ -7,15 +7,15 @@ import {
   IconTargetArrow,
 } from "@tabler/icons-react"
 
-import { buttonVariants } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { linkButtonHero } from "@/lib/button-link-styles"
 import { cn } from "@/lib/utils"
 
 export function DashboardScreen() {
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
       <section className="relative overflow-hidden rounded-3xl border border-primary/20 bg-linear-to-br from-[var(--hero-from)] to-[var(--hero-to)] p-6 text-primary-foreground shadow-lg shadow-primary/15 sm:p-8">
-        <div className="absolute -top-20 -right-16 size-56 rounded-full bg-white/12 blur-2xl" />
+        <div className="absolute -top-20 -right-16 size-56 rounded-full bg-primary-foreground/15 blur-2xl" />
         <div className="absolute -bottom-28 left-16 size-64 rounded-full bg-black/10 blur-2xl" />
         <div className="relative z-10 max-w-2xl space-y-4">
           <p className="text-xs font-semibold tracking-[0.14em] text-primary-foreground/75 uppercase">
@@ -30,10 +30,7 @@ export function DashboardScreen() {
           </p>
           <Link
             href="/exams"
-            className={cn(
-              buttonVariants({ variant: "secondary" }),
-              "rounded-2xl bg-white text-slate-900 hover:bg-white/90"
-            )}
+            className={cn(linkButtonHero, "rounded-2xl")}
           >
             Open Exams
             <IconArrowRight />
