@@ -3,7 +3,6 @@ import { IconArrowRight, IconBook2 } from "@tabler/icons-react"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { SUBJECTS, type SubjectChaptersResponse, type SubjectId } from "@/components/main/types"
-import { linkButtonPrimary } from "@/lib/button-link-styles"
 import { cn } from "@/lib/utils"
 
 type SubjectChaptersScreenProps = {
@@ -39,7 +38,7 @@ export function SubjectChaptersScreen({ subjectId, data }: SubjectChaptersScreen
       </section>
 
       {chapters.length === 0 ? (
-        <Card className="rounded-3xl border border-border/70 py-0">
+        <Card className="rounded-3xl border border-border/70">
           <CardContent className="py-8 text-sm text-muted-foreground">
             No chapter data available for this subject.
           </CardContent>
@@ -47,7 +46,7 @@ export function SubjectChaptersScreen({ subjectId, data }: SubjectChaptersScreen
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {chapters.map((chapter) => (
-            <Card key={chapter.chapter} className="rounded-3xl border border-border/70 bg-card/95 py-0">
+            <Card key={chapter.chapter} className="rounded-3xl border border-border/70 bg-card/95">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-start justify-between gap-3 text-lg">
                   <span className="leading-tight">{chapter.chapter}</span>
@@ -61,17 +60,16 @@ export function SubjectChaptersScreen({ subjectId, data }: SubjectChaptersScreen
                 {chapter.latestExamId ? (
                   <Link
                     href={`/exams/take/${chapter.latestExamId}`}
-                    className={cn(linkButtonPrimary, "w-full rounded-2xl")}
+                    className="inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-2xl px-3 text-sm font-medium text-white transition-all hover:opacity-85"
+                    style={{ backgroundColor: subject.colorVar }}
                   >
                     Start Test
                     <IconArrowRight />
                   </Link>
                 ) : (
                   <span
-                    className={cn(
-                      linkButtonPrimary,
-                      "pointer-events-none w-full rounded-2xl opacity-50"
-                    )}
+                    className="inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-2xl px-3 text-sm font-medium text-white opacity-50 transition-all pointer-events-none"
+                    style={{ backgroundColor: subject.colorVar }}
                   >
                     Start Test
                   </span>

@@ -1,5 +1,7 @@
 import { IconCheck, IconX } from "@tabler/icons-react"
+import Link from "next/link"
 
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 type ReviewQuestion = {
@@ -24,7 +26,7 @@ type ExamReviewScreenProps = {
 export function ExamReviewScreen({ title, questions }: ExamReviewScreenProps) {
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-4">
-      <Card className="rounded-3xl border border-border/70 bg-card/95 py-0 shadow-sm">
+      <Card className="rounded-3xl border border-border/70 bg-card/95 shadow-sm">
         <CardHeader className="border-b border-border/60 bg-muted/20 pb-4">
           <CardTitle className="text-xl font-semibold tracking-tight">{title}</CardTitle>
         </CardHeader>
@@ -34,7 +36,7 @@ export function ExamReviewScreen({ title, questions }: ExamReviewScreenProps) {
       </Card>
 
       {questions.map((question) => (
-        <Card key={question.id} className="rounded-3xl border border-border/70 bg-card/95 py-0 shadow-sm">
+        <Card key={question.id} className="rounded-3xl border border-border/70 bg-card/95 shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-medium text-foreground">
               Q{question.questionNumber}. {question.questionText}
@@ -79,6 +81,12 @@ export function ExamReviewScreen({ title, questions }: ExamReviewScreenProps) {
           </CardContent>
         </Card>
       ))}
+
+      <div className="flex justify-center pb-8 pt-4">
+        <Button render={<Link href="/" />} size="lg" className="rounded-2xl px-8">
+          Go to Dashboard
+        </Button>
+      </div>
     </div>
   )
 }

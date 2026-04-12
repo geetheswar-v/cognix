@@ -28,7 +28,7 @@ export function ExamsOverviewScreen({
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-      <Card className="overflow-hidden rounded-3xl border border-border/70 bg-card/95 py-0 shadow-sm">
+      <Card className="overflow-hidden rounded-3xl border border-border/70 bg-card/95 shadow-sm">
         <CardHeader className="border-b border-border/60 bg-muted/20 pb-5">
           <CardTitle className="flex items-center gap-2 text-lg font-semibold tracking-tight">
             <IconBolt className="size-5 text-primary" />
@@ -73,7 +73,7 @@ export function ExamsOverviewScreen({
         </CardContent>
       </Card>
 
-      <Card className="rounded-3xl border border-border/70 bg-card/95 py-0 shadow-sm">
+      <Card className="rounded-3xl border border-border/70 bg-card/95 shadow-sm">
         <CardHeader className="border-b border-border/60 bg-muted/20 pb-5">
           <CardTitle className="flex items-center gap-2 text-lg font-semibold tracking-tight">
             <IconHistory className="size-5 text-primary" />

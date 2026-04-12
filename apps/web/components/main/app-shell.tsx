@@ -33,8 +33,8 @@ export function AppShell({ children, userName }: AppShellProps) {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset className="min-h-svh bg-[radial-gradient(circle_at_5%_0%,color-mix(in_oklch,var(--primary)_14%,white)_0%,transparent_45%),radial-gradient(circle_at_95%_20%,color-mix(in_oklch,var(--chart-2)_14%,white)_0%,transparent_38%)]">
-        <header className="sticky top-0 z-30 border-b border-border/60 bg-background/85 backdrop-blur-xl">
+      <SidebarInset className="flex min-h-0 flex-1 flex-col bg-background">
+        <header className="sticky top-0 z-30 shrink-0 border-b border-border/60 bg-background/85 backdrop-blur-xl">
           <div className="flex h-16 items-center gap-3 px-4 sm:h-20 sm:px-6">
             <SidebarTrigger className="md:hidden" />
             <div className="min-w-0 flex-1">
@@ -61,7 +61,7 @@ export function AppShell({ children, userName }: AppShellProps) {
             </div>
           </div>
         </header>
-        <div className="flex-1 p-4 sm:p-6 lg:p-8">{children}</div>
+        <div className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   )
