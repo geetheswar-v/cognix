@@ -51,3 +51,52 @@ export type SubjectChaptersResponse = {
     latestCreatedAt: string | null
   }>
 }
+
+export type ExamQuestionOption = {
+  id: string
+  optionIndex: number
+  optionText: string
+}
+
+export type ExamQuestion = {
+  id: string
+  questionNumber: number
+  subject: string
+  chapter: string
+  subTopic: string
+  questionText: string
+  explanation: string
+  options: ExamQuestionOption[]
+}
+
+export type ExamDetailsResponse = {
+  success: boolean
+  exam?: {
+    id: string
+    testId: string
+    examType: string
+    subject: string | null
+    chapter: string | null
+    totalQuestions: number
+    scoring: {
+      correct: number
+      wrong: number
+      unattempted: number
+    }
+    createdAt: string
+  }
+  questions?: ExamQuestion[]
+}
+
+export type ExamSubmitResponse = {
+  success: boolean
+  result?: {
+    attemptId: string
+    score: number
+    correctCount: number
+    wrongCount: number
+    unattemptedCount: number
+    totalQuestions: number
+  }
+  error?: string
+}

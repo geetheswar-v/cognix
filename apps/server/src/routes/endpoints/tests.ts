@@ -1,6 +1,7 @@
 import { Elysia, t } from 'elysia';
 import { auth } from '../../lib/auth';
 import {
+  getCompletedExamWithQuestionsByExamId,
   getChapterExamByTestId,
   getLatestCompletedChapterExams,
   getLatestCompletedExamWithQuestions,
@@ -137,6 +138,53 @@ export const testsRoutes = new Elysia({ prefix: '/tests' })
   }, {
     params: t.Object({
       testId: t.String(),
+    }),
+  })
+  .get('/exams/:examId', async ({ params, set }) => {
+    const found = await getCompletedExamWithQuestionsByExamId(params.examId);
+
+    if (!found) {
+      set.status = 404;
+      return {
+        success: false,
+        error: 'Exam not found',
+      };
+    }
+
+    return {
+      success: true,
+      exam: {
+        id: found.exam.id,
+        testId: found.exam.externalTestId ?? found.exam.id,
+        examType: found.exam.examType,
+        subject: found.exam.scopeSubject,
+        chapter: found.exam.scopeChapter,
+        totalQuestions: found.exam.totalQuestions,
+        scoring: {
+          correct: found.exam.scoringCorrectMarks,
+          wrong: found.exam.scoringWrongMarks,
+          unattempted: found.exam.scoringUnattemptedMarks,
+        },
+        createdAt: found.exam.createdAt,
+      },
+      questions: found.questions.map((question) => ({
+        id: question.id,
+        questionNumber: question.questionNumber,
+        subject: question.subject,
+        chapter: question.chapter,
+        subTopic: question.subTopic,
+        questionText: question.questionText,
+        explanation: question.explanation,
+        options: question.options.map((option) => ({
+          id: option.id,
+          optionIndex: option.optionIndex,
+          optionText: option.optionText,
+        })),
+      })),
+    };
+  }, {
+    params: t.Object({
+      examId: t.String(),
     }),
   })
   .post(

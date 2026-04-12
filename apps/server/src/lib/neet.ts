@@ -1496,6 +1496,26 @@ export async function getChapterExamByTestId(testId: string) {
   return { exam, questions };
 }
 
+export async function getCompletedExamWithQuestionsByExamId(examId: string) {
+  const exam = await db.query.neetExam.findFirst({
+    where: and(eq(neetExam.status, 'completed'), eq(neetExam.id, examId)),
+  });
+
+  if (!exam) return null;
+
+  const questions = await db.query.neetExamQuestion.findMany({
+    where: eq(neetExamQuestion.examId, exam.id),
+    orderBy: (table, { asc }) => [asc(table.questionNumber)],
+    with: {
+      options: {
+        orderBy: (table, { asc }) => [asc(table.optionIndex)],
+      },
+    },
+  });
+
+  return { exam, questions };
+}
+
 export async function submitNeetExamAnswers(input: {
   examId: string;
   userId: string;
