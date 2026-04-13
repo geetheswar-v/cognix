@@ -1430,6 +1430,36 @@ export async function getLatestCompletedChapterExams(limit = 20) {
   }));
 }
 
+export async function getLatestAttemptedExams(params: {
+  userId: string;
+  limit?: number;
+}) {
+  const attempts = await db.query.neetExamAttempt.findMany({
+    where: and(eq(neetExamAttempt.userId, params.userId), eq(neetExamAttempt.status, 'submitted')),
+    orderBy: [desc(neetExamAttempt.submittedAt), desc(neetExamAttempt.updatedAt)],
+    limit: params.limit ?? 20,
+    with: {
+      exam: true,
+    },
+  });
+
+  return attempts.map((attempt) => ({
+    attemptId: attempt.id,
+    examId: attempt.exam.id,
+    testId: attempt.exam.externalTestId,
+    examType: attempt.exam.examType,
+    subject: attempt.exam.scopeSubject,
+    chapter: attempt.exam.scopeChapter,
+    questions: attempt.exam.totalQuestions,
+    score: attempt.score,
+    correctCount: attempt.correctCount,
+    wrongCount: attempt.wrongCount,
+    unattemptedCount: attempt.unattemptedCount,
+    submittedAt: attempt.submittedAt,
+    createdAt: attempt.exam.createdAt,
+  }));
+}
+
 export async function getSubjectChaptersWithLatestTest(subject: string) {
   const concepts = await concepts_db.execute({
     sql: `SELECT DISTINCT chapter FROM concepts WHERE lower(subject) = lower(?) ORDER BY chapter ASC`,
@@ -1698,6 +1728,62 @@ export async function getAttemptedChapterTestReview(params: {
       eq(neetExam.examType, 'chapter'),
       eq(neetExam.externalTestId, params.testId),
     ),
+  });
+
+  if (!exam) return null;
+
+  const attempt = await db.query.neetExamAttempt.findFirst({
+    where: and(eq(neetExamAttempt.examId, exam.id), eq(neetExamAttempt.userId, params.userId)),
+  });
+
+  if (!attempt) return null;
+
+  const questions = await db.query.neetExamQuestion.findMany({
+    where: eq(neetExamQuestion.examId, exam.id),
+    orderBy: (table, { asc }) => [asc(table.questionNumber)],
+    with: {
+      options: {
+        orderBy: (table, { asc }) => [asc(table.optionIndex)],
+      },
+    },
+  });
+
+  const answers = await db.query.neetExamAttemptAnswer.findMany({
+    where: eq(neetExamAttemptAnswer.attemptId, attempt.id),
+  });
+
+  const answerByQuestionId = new Map(answers.map((answer) => [answer.questionId, answer]));
+
+  return {
+    exam,
+    attempt,
+    questions: questions.map((question) => {
+      const selected = answerByQuestionId.get(question.id);
+      const correct = question.options.find((option) => option.isCorrect);
+
+      return {
+        id: question.id,
+        questionNumber: question.questionNumber,
+        questionText: question.questionText,
+        explanation: question.explanation,
+        selectedOptionId: selected?.selectedOptionId ?? null,
+        correctOptionId: correct?.id ?? null,
+        options: question.options.map((option) => ({
+          id: option.id,
+          optionIndex: option.optionIndex,
+          optionText: option.optionText,
+        })),
+      };
+    }),
+  };
+}
+
+export async function getAttemptedExamReviewByExamId(params: {
+  userId: string;
+  examId: string;
+}) {
+  const exam = await db.query.neetExam.findFirst({
+    where: and(eq(neetExam.status, 'completed'), eq(neetExam.id, params.examId)),
   });
 
   if (!exam) return null;

@@ -2,10 +2,12 @@ import { Elysia, t } from 'elysia';
 import { auth } from '../../lib/auth';
 import {
   getCompletedExamWithQuestionsByExamId,
+  getAttemptedExamReviewByExamId,
   getAttemptedChapterTestReview,
   getChapterExamByTestId,
   getLatestCompletedChapterExams,
   getLatestCompletedExamWithQuestions,
+  getLatestAttemptedExams,
   getSubjectChaptersWithLatestTest,
   submitNeetExamAnswers,
 } from '../../lib/neet';
@@ -68,6 +70,33 @@ export const testsRoutes = new Elysia({ prefix: '/tests' })
     return {
       success: true,
       exams,
+    };
+  }, {
+    query: t.Object({
+      limit: t.Optional(t.Integer({ minimum: 1, maximum: 100 })),
+    }),
+  })
+  .get('/attempts/latest', async ({ query, request, set }) => {
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
+
+    if (!session) {
+      set.status = 401;
+      return {
+        success: false,
+        error: 'Unauthorized',
+      };
+    }
+
+    const attempts = await getLatestAttemptedExams({
+      userId: session.user.id,
+      limit: query.limit ?? 20,
+    });
+
+    return {
+      success: true,
+      attempts,
     };
   }, {
     query: t.Object({
@@ -189,6 +218,57 @@ export const testsRoutes = new Elysia({ prefix: '/tests' })
   }, {
     params: t.Object({
       testId: t.String(),
+    }),
+  })
+  .get('/exams/:examId/review', async ({ params, request, set }) => {
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
+
+    if (!session) {
+      set.status = 401;
+      return {
+        success: false,
+        error: 'Unauthorized',
+      };
+    }
+
+    const review = await getAttemptedExamReviewByExamId({
+      userId: session.user.id,
+      examId: params.examId,
+    });
+
+    if (!review) {
+      set.status = 404;
+      return {
+        success: false,
+        error: 'Attempt not found for this exam',
+      };
+    }
+
+    return {
+      success: true,
+      exam: {
+        id: review.exam.id,
+        testId: review.exam.externalTestId ?? review.exam.id,
+        examType: review.exam.examType,
+        subject: review.exam.scopeSubject,
+        chapter: review.exam.scopeChapter,
+        totalQuestions: review.exam.totalQuestions,
+      },
+      attempt: {
+        id: review.attempt.id,
+        submittedAt: review.attempt.submittedAt,
+        score: review.attempt.score,
+        correctCount: review.attempt.correctCount,
+        wrongCount: review.attempt.wrongCount,
+        unattemptedCount: review.attempt.unattemptedCount,
+      },
+      questions: review.questions,
+    };
+  }, {
+    params: t.Object({
+      examId: t.String(),
     }),
   })
   .get('/exams/:examId', async ({ params, set }) => {

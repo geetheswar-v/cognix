@@ -63,6 +63,25 @@ export type ChapterExamListResponse = {
   }>
 }
 
+export type AttemptedExamListResponse = {
+  success: boolean
+  attempts: Array<{
+    attemptId: string
+    examId: string
+    testId: string | null
+    examType: string
+    subject: string | null
+    chapter: string | null
+    questions: number
+    score: number
+    correctCount: number
+    wrongCount: number
+    unattemptedCount: number
+    submittedAt: string | null
+    createdAt: string
+  }>
+}
+
 export type SubjectChaptersResponse = {
   success: boolean
   subject: SubjectId
@@ -129,6 +148,7 @@ export type ChapterReviewResponse = {
   exam?: {
     id: string
     testId: string
+    examType?: string
     subject: string | null
     chapter: string | null
     totalQuestions: number

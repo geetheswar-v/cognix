@@ -9,13 +9,13 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import type {
-  ChapterExamListResponse,
+  AttemptedExamListResponse,
   LatestFullExamResponse,
 } from "@/components/main/types"
 
 type ExamsOverviewScreenProps = {
   latestFullExam: LatestFullExamResponse | null
-  latestChapterExams: ChapterExamListResponse | null
+  latestAttempts: AttemptedExamListResponse | null
 }
 
 function formatDate(value: string) {
@@ -28,10 +28,10 @@ function formatDate(value: string) {
 
 export function ExamsOverviewScreen({
   latestFullExam,
-  latestChapterExams,
+  latestAttempts,
 }: ExamsOverviewScreenProps) {
   const fullExam = latestFullExam?.exam
-  const history = latestChapterExams?.exams ?? []
+  const history = latestAttempts?.attempts ?? []
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
@@ -89,31 +89,34 @@ export function ExamsOverviewScreen({
         <CardHeader className="border-b border-border/60 bg-muted/20 pb-5">
           <CardTitle className="flex items-center gap-2 text-lg font-semibold tracking-tight">
             <IconHistory className="size-5 text-primary" />
-            Recent Chapter Tests
+            Recent Attempted Tests
           </CardTitle>
         </CardHeader>
         <CardContent className="py-6">
           {history.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              No chapter test history yet.
+              No attempted tests found yet. Submit a test to see review links.
             </p>
           ) : (
             <div className="flex flex-col gap-3">
               {history.map((exam) => (
                 <div
-                  key={exam.examId}
+                  key={exam.attemptId}
                   className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/60 bg-background/70 p-4"
                 >
                   <div>
                     <p className="font-medium tracking-tight text-foreground">
-                      {exam.subject ?? "Subject"} · {exam.chapter ?? "Chapter"}
+                      {exam.examType === "full"
+                        ? "Grand Test"
+                        : `${exam.subject ?? "Subject"} · ${exam.chapter ?? "Chapter"}`}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {exam.questions} questions · {formatDate(exam.createdAt)}
+                      {exam.questions} questions · Score {exam.score} · Submitted{" "}
+                      {formatDate(exam.submittedAt ?? exam.createdAt)}
                     </p>
                   </div>
                   <Button
-                    render={<Link href={`/exams/review/${exam.testId}`} />}
+                    render={<Link href={`/exams/review/${exam.examId}`} />}
                     variant="outline"
                     className="rounded-2xl"
                   >

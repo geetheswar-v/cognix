@@ -1,5 +1,8 @@
 import { ExamsOverviewScreen } from "@/components/main/exams-overview-screen"
-import type { ChapterExamListResponse, LatestFullExamResponse } from "@/components/main/types"
+import type {
+  AttemptedExamListResponse,
+  LatestFullExamResponse,
+} from "@/components/main/types"
 import { apiFetch } from "@/lib/server-api"
 
 async function fetchLatestFullExam() {
@@ -9,23 +12,23 @@ async function fetchLatestFullExam() {
   return (await response.json()) as LatestFullExamResponse
 }
 
-async function fetchLatestChapterExams() {
-  const response = await apiFetch("/api/tests/chapters/latest?limit=20")
+async function fetchLatestAttempts() {
+  const response = await apiFetch("/api/tests/attempts/latest?limit=20")
 
   if (!response.ok) return null
-  return (await response.json()) as ChapterExamListResponse
+  return (await response.json()) as AttemptedExamListResponse
 }
 
 export default async function ExamsPage() {
-  const [latestFullExam, latestChapterExams] = await Promise.all([
+  const [latestFullExam, latestAttempts] = await Promise.all([
     fetchLatestFullExam(),
-    fetchLatestChapterExams(),
+    fetchLatestAttempts(),
   ])
 
   return (
     <ExamsOverviewScreen
       latestFullExam={latestFullExam}
-      latestChapterExams={latestChapterExams}
+      latestAttempts={latestAttempts}
     />
   )
 }

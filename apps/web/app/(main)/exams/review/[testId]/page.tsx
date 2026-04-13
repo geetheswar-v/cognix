@@ -4,8 +4,8 @@ import { ExamReviewScreen } from "@/components/main/exam-review-screen"
 import type { ChapterReviewResponse } from "@/components/main/types"
 import { apiFetch } from "@/lib/server-api"
 
-async function fetchReview(testId: string) {
-  const response = await apiFetch(`/api/tests/chapters/${testId}/review`)
+async function fetchReview(examId: string) {
+  const response = await apiFetch(`/api/tests/exams/${examId}/review`)
   if (!response.ok) return null
   return (await response.json()) as ChapterReviewResponse
 }
@@ -22,7 +22,10 @@ export default async function ReviewTestPage({
     notFound()
   }
 
-  const title = `${data.exam.subject ?? "Subject"} · ${data.exam.chapter ?? "Chapter"} Review`
+  const title =
+    data.exam.examType === "full"
+      ? "Grand Test Review"
+      : `${data.exam.subject ?? "Subject"} · ${data.exam.chapter ?? "Chapter"} Review`
 
   return <ExamReviewScreen title={title} questions={data.questions} />
 }
