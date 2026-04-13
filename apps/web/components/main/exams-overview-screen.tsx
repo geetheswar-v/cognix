@@ -1,13 +1,21 @@
 import Link from "next/link"
 import {
+  IconBook2,
   IconArrowRight,
   IconBolt,
+  IconCircleCheck,
   IconFlask2,
   IconHistory,
 } from "@tabler/icons-react"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import type {
   AttemptedExamListResponse,
   LatestFullExamResponse,
@@ -41,16 +49,17 @@ export function ExamsOverviewScreen({
             <IconBolt className="size-5 text-primary" />
             Latest Full Test
           </CardTitle>
+          <CardDescription>
+            Take the most recent full paper to keep momentum.
+          </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4 py-6">
           {fullExam ? (
             <>
               <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/60 bg-background/60 p-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">
-                    Available test
-                  </p>
-                  <p className="text-xl font-semibold tracking-tight">
+                  <p className="text-sm text-muted-foreground">Available now</p>
+                  <p className="text-xl font-semibold tracking-tight text-foreground">
                     Grand Test · {fullExam.totalQuestions} Questions
                   </p>
                   <p className="text-sm text-muted-foreground">
@@ -66,13 +75,13 @@ export function ExamsOverviewScreen({
                 </Button>
               </div>
               <div className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-2xl bg-emerald-100/80 p-3 text-sm text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
-                  +{fullExam.scoring.correct} marks for correct
+                <div className="rounded-2xl border border-border bg-muted/40 p-3 text-sm text-muted-foreground">
+                  +{fullExam.scoring.correct} for correct
                 </div>
-                <div className="rounded-2xl bg-rose-100/80 p-3 text-sm text-rose-800 dark:bg-rose-950/40 dark:text-rose-300">
-                  {fullExam.scoring.wrong} marks for wrong
+                <div className="rounded-2xl border border-border bg-muted/40 p-3 text-sm text-muted-foreground">
+                  {fullExam.scoring.wrong} for wrong
                 </div>
-                <div className="rounded-2xl bg-slate-200/80 p-3 text-sm text-slate-800 dark:bg-slate-800/70 dark:text-slate-200">
+                <div className="rounded-2xl border border-border bg-muted/40 p-3 text-sm text-muted-foreground">
                   {fullExam.scoring.unattempted} for unattempted
                 </div>
               </div>
@@ -91,8 +100,11 @@ export function ExamsOverviewScreen({
             <IconHistory className="size-5 text-primary" />
             Recent Attempted Tests
           </CardTitle>
+          <CardDescription>
+            Open any past attempt and inspect every answer with explanation.
+          </CardDescription>
         </CardHeader>
-        <CardContent className="py-6">
+        <CardContent className="flex flex-col gap-4 py-6">
           {history.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               No attempted tests found yet. Submit a test to see review links.
@@ -104,7 +116,7 @@ export function ExamsOverviewScreen({
                   key={exam.attemptId}
                   className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/60 bg-background/70 p-4"
                 >
-                  <div>
+                  <div className="flex flex-col gap-1">
                     <p className="font-medium tracking-tight text-foreground">
                       {exam.examType === "full"
                         ? "Grand Test"
@@ -114,15 +126,38 @@ export function ExamsOverviewScreen({
                       {exam.questions} questions · Score {exam.score} · Submitted{" "}
                       {formatDate(exam.submittedAt ?? exam.createdAt)}
                     </p>
+                    <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                      <span className="rounded-md border border-border bg-muted px-2 py-1">
+                        <IconCircleCheck className="mr-1 inline" />
+                        {exam.correctCount} correct
+                      </span>
+                      <span className="rounded-md border border-border bg-muted px-2 py-1">
+                        {exam.wrongCount} wrong
+                      </span>
+                      <span className="rounded-md border border-border bg-muted px-2 py-1">
+                        {exam.unattemptedCount} unattempted
+                      </span>
+                    </div>
                   </div>
-                  <Button
-                    render={<Link href={`/exams/review/${exam.examId}`} />}
-                    variant="outline"
-                    className="rounded-2xl"
-                  >
-                    <IconFlask2 />
-                    Review Attempt
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      render={<Link href={`/exams/review/${exam.examId}`} />}
+                      variant="outline"
+                      className="rounded-2xl"
+                    >
+                      <IconFlask2 />
+                      Review Attempt
+                    </Button>
+                    <Button
+                      render={<Link href={exam.examType === "full" ? "/exams/take/full" : "/exams"} />}
+                      variant="ghost"
+                      className="rounded-2xl"
+                    >
+                      <IconBook2 />
+                      Retry
+                      <IconArrowRight data-icon="inline-end" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>

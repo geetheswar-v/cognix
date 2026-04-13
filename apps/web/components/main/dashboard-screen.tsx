@@ -1,101 +1,115 @@
 import Link from "next/link"
 import {
+  IconActivity,
   IconArrowRight,
-  IconCalendarStats,
-  IconChartBar,
+  IconBook2,
+  IconChecklist,
   IconClock,
-  IconTargetArrow,
+  IconStars,
 } from "@tabler/icons-react"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 
 export function DashboardScreen() {
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-      <section className="relative overflow-hidden rounded-3xl border border-primary/20 bg-primary p-6 text-primary-foreground shadow-lg shadow-primary/15 sm:p-8">
-        <div className="absolute -top-20 -right-16 size-56 rounded-full bg-primary-foreground/15 blur-2xl" />
-        <div className="absolute -bottom-28 left-16 size-64 rounded-full bg-black/10 blur-2xl" />
-        <div className="relative z-10 flex max-w-2xl flex-col gap-4">
-          <p className="text-xs font-semibold tracking-[0.14em] text-primary-foreground/75 uppercase">
-            Daily Challenge
+      <section className="relative overflow-hidden rounded-3xl border border-primary/20 bg-linear-to-br from-primary to-primary/85 p-6 text-primary-foreground shadow-xl shadow-primary/15 sm:p-8">
+        <div className="absolute -top-16 right-8 size-44 rounded-full bg-white/12 blur-2xl" />
+        <div className="absolute -bottom-20 -left-8 size-56 rounded-full bg-black/18 blur-3xl" />
+        <div className="relative z-10 flex max-w-3xl flex-col gap-5">
+          <p className="text-xs font-semibold tracking-[0.18em] uppercase text-primary-foreground/75">
+            Student Home
           </p>
-          <h2 className="text-3xl leading-tight font-semibold tracking-tight sm:text-4xl">
-            Stay exam-ready with one focused NEET test every day.
+          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+            Practice smart, review fast, and improve every attempt.
           </h2>
-          <p className="text-sm leading-relaxed text-primary-foreground/80 sm:text-base">
-            Take the latest full test and keep your preparation rhythm steady.
-            Detailed review data will appear as soon as your attempts are saved.
+          <p className="max-w-2xl text-sm text-primary-foreground/85 sm:text-base">
+            Start your latest full test, revisit attempted papers, and sharpen
+            weak chapters with consistent daily flow.
           </p>
-          <Button
-            render={<Link href="/exams" />}
-            variant="secondary"
-            className="w-fit rounded-2xl"
-          >
-            Open Exams
-            <IconArrowRight />
-          </Button>
+          <div className="flex flex-wrap gap-3">
+            <Button
+              render={<Link href="/exams/take/full" />}
+              variant="secondary"
+              className="rounded-2xl"
+            >
+              Start Full Test
+              <IconArrowRight data-icon="inline-end" />
+            </Button>
+            <Button
+              render={<Link href="/exams" />}
+              variant="outline"
+              className="rounded-2xl border-white/25 bg-white/10 text-white hover:bg-white/20 hover:text-white"
+            >
+              View Attempts
+              <IconChecklist data-icon="inline-end" />
+            </Button>
+          </div>
         </div>
       </section>
 
       <section className="grid gap-4 md:grid-cols-3">
-        <Card className="rounded-3xl border border-border/70 bg-card/90">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <IconTargetArrow className="size-4 text-primary" />
-              Tests Planned
+        <Card className="rounded-3xl border border-border/70 bg-card/95">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <IconBook2 className="text-primary" />
+              Full Test Ready
             </CardTitle>
+            <CardDescription>Latest paper available now</CardDescription>
           </CardHeader>
-          <CardContent className="pb-6">
+          <CardContent>
             <p className="text-3xl font-semibold tracking-tight">1</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Latest full test available
-            </p>
           </CardContent>
         </Card>
 
-        <Card className="rounded-3xl border border-border/70 bg-card/90">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <IconClock className="size-4 text-primary" />
-              Duration
+        <Card className="rounded-3xl border border-border/70 bg-card/95">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <IconClock className="text-primary" />
+              Focus Duration
             </CardTitle>
+            <CardDescription>Recommended daily session</CardDescription>
           </CardHeader>
-          <CardContent className="pb-6">
-            <p className="text-3xl font-semibold tracking-tight">45m</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Recommended daily session
-            </p>
+          <CardContent>
+            <p className="text-3xl font-semibold tracking-tight">45 min</p>
           </CardContent>
         </Card>
 
-        <Card className="rounded-3xl border border-border/70 bg-card/90">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <IconCalendarStats className="size-4 text-primary" />
-              Consistency
+        <Card className="rounded-3xl border border-border/70 bg-card/95">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <IconStars className="text-primary" />
+              Attempt Strategy
             </CardTitle>
+            <CardDescription>Target one test per day</CardDescription>
           </CardHeader>
-          <CardContent className="pb-6">
+          <CardContent>
             <p className="text-3xl font-semibold tracking-tight">Daily</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Practice cadence target
-            </p>
           </CardContent>
         </Card>
       </section>
 
-      <Card className="rounded-3xl border border-border/70 bg-card/90">
+      <Card className="rounded-3xl border border-border/70 bg-card/95">
         <CardHeader className="border-b border-border/60">
           <CardTitle className="flex items-center gap-2 text-base">
-            <IconChartBar className="size-4 text-primary" />
-            Performance widgets coming next
+            <IconActivity className="text-primary" />
+            Performance Tracking
           </CardTitle>
+          <CardDescription>
+            Attempt reviews are already active. Detailed trend analytics can be
+            added next.
+          </CardDescription>
         </CardHeader>
-        <CardContent className="py-6 text-sm leading-relaxed text-muted-foreground">
-          We skipped score analytics for now as requested. Once student review
-          endpoints are fully wired, this dashboard will show subject-wise
-          accuracy, weak areas, and streak trends.
+        <CardContent className="py-6 text-sm text-muted-foreground">
+          Use the Exams page to open your previous attempts, inspect selected and
+          correct options, and revise explanations chapter by chapter.
         </CardContent>
       </Card>
     </div>

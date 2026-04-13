@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
   IconAtom,
-  IconBook2,
+  IconChecks,
   IconDna2,
   IconFlask2,
   IconLeaf,
@@ -46,7 +46,7 @@ const menu = [
   {
     label: "Exams",
     href: "/exams",
-    icon: IconBook2,
+    icon: IconChecks,
     children: SUBJECT_IDS.map((id) => ({
       label: SUBJECTS[id].label,
       href: `/exams/${id}`,
@@ -66,7 +66,7 @@ export function AppSidebar() {
   const pathname = usePathname()
 
   return (
-    <Sidebar variant="inset" className="border-r border-sidebar-border/70">
+    <Sidebar variant="inset" className="border-r border-sidebar-border/70 bg-sidebar/70">
       <SidebarHeader className="px-4 py-5">
         <Link
           href="/"
@@ -78,7 +78,7 @@ export function AppSidebar() {
 
       <SidebarContent className="px-2">
         <SidebarGroup>
-          <SidebarGroupLabel>Workspace</SidebarGroupLabel>
+          <SidebarGroupLabel>Main Navigation</SidebarGroupLabel>
           <SidebarMenu>
             {menu.map((item) => {
               const Icon = item.icon

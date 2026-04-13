@@ -9,6 +9,8 @@ import {
   IconChecklist,
   IconClock,
   IconFlag2,
+  IconPlayerPause,
+  IconProgress,
   IconSend2,
 } from "@tabler/icons-react"
 
@@ -258,6 +260,17 @@ export function ExamTakingClient({ exam, questions }: ExamTakingClientProps) {
                 width: `${((currentIndex + 1) / questions.length) * 100}%`,
               }}
             />
+          </div>
+
+          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+            <span className="rounded-md border border-border bg-muted px-2 py-1">
+              <IconProgress className="mr-1 inline" />
+              Progress {currentIndex + 1}/{questions.length}
+            </span>
+            <span className="rounded-md border border-border bg-muted px-2 py-1">
+              <IconPlayerPause className="mr-1 inline" />
+              You can submit anytime
+            </span>
           </div>
 
           <div className="flex flex-col gap-4">

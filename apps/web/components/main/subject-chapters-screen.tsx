@@ -1,8 +1,14 @@
 import Link from "next/link"
-import { IconArrowRight, IconBook2 } from "@tabler/icons-react"
+import { IconArrowRight, IconBook2, IconCalendarWeek } from "@tabler/icons-react"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import {
   SUBJECTS,
   type SubjectChaptersResponse,
@@ -35,7 +41,8 @@ export function SubjectChaptersScreen({
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-      <section className="rounded-3xl border border-border/70 bg-card/90 p-6">
+      <section className="relative overflow-hidden rounded-3xl border border-border/70 bg-card/95 p-6">
+        <div className="pointer-events-none absolute -right-10 -bottom-10 size-40 rounded-full bg-primary/10 blur-2xl" />
         <p className="text-xs font-semibold tracking-[0.14em] text-muted-foreground uppercase">
           Subject Syllabus
         </p>
@@ -45,8 +52,8 @@ export function SubjectChaptersScreen({
           {subject.label}
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Start test button is enabled only on chapters with a latest test
-          created by admin.
+          Choose a chapter and start the latest available test. Your completed
+          attempts appear in Exams review.
         </p>
       </section>
 
@@ -68,11 +75,12 @@ export function SubjectChaptersScreen({
                   <span className="leading-tight">{chapter.chapter}</span>
                   <IconBook2 className="size-5 text-muted-foreground" />
                 </CardTitle>
+                <CardDescription className="flex items-center gap-1.5">
+                  <IconCalendarWeek />
+                  Latest test: {formatDate(chapter.latestCreatedAt)}
+                </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-4 pb-6">
-                <p className="text-sm text-muted-foreground">
-                  Latest test: {formatDate(chapter.latestCreatedAt)}
-                </p>
                 {chapter.latestExamId ? (
                   <Button
                     render={
@@ -81,7 +89,7 @@ export function SubjectChaptersScreen({
                     className={`w-full rounded-2xl text-white hover:opacity-90 ${subjectBgClass}`}
                   >
                     Start Test
-                    <IconArrowRight />
+                    <IconArrowRight data-icon="inline-end" />
                   </Button>
                 ) : (
                   <Button
