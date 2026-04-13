@@ -1,10 +1,17 @@
 import Link from "next/link"
-import { IconArrowRight, IconBolt, IconFlask2, IconHistory } from "@tabler/icons-react"
+import {
+  IconArrowRight,
+  IconBolt,
+  IconFlask2,
+  IconHistory,
+} from "@tabler/icons-react"
 
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import type { ChapterExamListResponse, LatestFullExamResponse } from "@/components/main/types"
-import { linkButtonOutline, linkButtonPrimary } from "@/lib/button-link-styles"
-import { cn } from "@/lib/utils"
+import type {
+  ChapterExamListResponse,
+  LatestFullExamResponse,
+} from "@/components/main/types"
 
 type ExamsOverviewScreenProps = {
   latestFullExam: LatestFullExamResponse | null
@@ -35,12 +42,14 @@ export function ExamsOverviewScreen({
             Latest Full Test
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4 py-6">
+        <CardContent className="flex flex-col gap-4 py-6">
           {fullExam ? (
             <>
               <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/60 bg-background/60 p-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Available test</p>
+                  <p className="text-sm text-muted-foreground">
+                    Available test
+                  </p>
                   <p className="text-xl font-semibold tracking-tight">
                     Grand Test · {fullExam.totalQuestions} Questions
                   </p>
@@ -48,10 +57,13 @@ export function ExamsOverviewScreen({
                     Created on {formatDate(fullExam.createdAt)}
                   </p>
                 </div>
-                <Link href="/exams/take/full" className={cn(linkButtonPrimary, "rounded-2xl")}>
+                <Button
+                  render={<Link href="/exams/take/full" />}
+                  className="rounded-2xl"
+                >
                   Start Full Test
                   <IconArrowRight />
-                </Link>
+                </Button>
               </div>
               <div className="grid gap-3 sm:grid-cols-3">
                 <div className="rounded-2xl bg-emerald-100/80 p-3 text-sm text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
@@ -82,9 +94,11 @@ export function ExamsOverviewScreen({
         </CardHeader>
         <CardContent className="py-6">
           {history.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No chapter test history yet.</p>
+            <p className="text-sm text-muted-foreground">
+              No chapter test history yet.
+            </p>
           ) : (
-            <div className="space-y-3">
+            <div className="flex flex-col gap-3">
               {history.map((exam) => (
                 <div
                   key={exam.examId}
@@ -98,13 +112,14 @@ export function ExamsOverviewScreen({
                       {exam.questions} questions · {formatDate(exam.createdAt)}
                     </p>
                   </div>
-                  <Link
-                    href={`/exams/review/${exam.testId}`}
-                    className={cn(linkButtonOutline, "rounded-2xl")}
+                  <Button
+                    render={<Link href={`/exams/review/${exam.testId}`} />}
+                    variant="outline"
+                    className="rounded-2xl"
                   >
                     <IconFlask2 />
                     Review Attempt
-                  </Link>
+                  </Button>
                 </div>
               ))}
             </div>

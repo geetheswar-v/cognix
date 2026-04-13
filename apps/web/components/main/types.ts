@@ -1,5 +1,12 @@
 export type SubjectId = "physics" | "chemistry" | "botany" | "zoology"
 
+export const SUBJECT_IDS: SubjectId[] = [
+  "physics",
+  "chemistry",
+  "botany",
+  "zoology",
+]
+
 export type SubjectExamMeta = {
   id: SubjectId
   label: string
@@ -7,10 +14,26 @@ export type SubjectExamMeta = {
 }
 
 export const SUBJECTS: Record<SubjectId, SubjectExamMeta> = {
-  physics: { id: "physics", label: "Physics", colorVar: "var(--subject-physics)" },
-  chemistry: { id: "chemistry", label: "Chemistry", colorVar: "var(--subject-chemistry)" },
+  physics: {
+    id: "physics",
+    label: "Physics",
+    colorVar: "var(--subject-physics)",
+  },
+  chemistry: {
+    id: "chemistry",
+    label: "Chemistry",
+    colorVar: "var(--subject-chemistry)",
+  },
   botany: { id: "botany", label: "Botany", colorVar: "var(--subject-botany)" },
-  zoology: { id: "zoology", label: "Zoology", colorVar: "var(--subject-zoology)" },
+  zoology: {
+    id: "zoology",
+    label: "Zoology",
+    colorVar: "var(--subject-zoology)",
+  },
+}
+
+export function isSubjectId(value: string): value is SubjectId {
+  return SUBJECT_IDS.includes(value as SubjectId)
 }
 
 export type LatestFullExamResponse = {

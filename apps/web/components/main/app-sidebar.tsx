@@ -13,6 +13,7 @@ import {
 } from "@tabler/icons-react"
 
 import { Logo } from "@/components/logo"
+import { SUBJECT_IDS, SUBJECTS } from "@/components/main/types"
 import {
   Sidebar,
   SidebarContent,
@@ -29,6 +30,13 @@ import {
 } from "@/components/ui/sidebar"
 import { signOut } from "@/lib/auth-client"
 
+const subjectIcons = {
+  physics: IconAtom,
+  chemistry: IconFlask2,
+  botany: IconLeaf,
+  zoology: IconDna2,
+}
+
 const menu = [
   {
     label: "Dashboard",
@@ -39,12 +47,11 @@ const menu = [
     label: "Exams",
     href: "/exams",
     icon: IconBook2,
-    children: [
-      { label: "Physics", href: "/exams/physics", icon: IconAtom },
-      { label: "Chemistry", href: "/exams/chemistry", icon: IconFlask2 },
-      { label: "Botany", href: "/exams/botany", icon: IconLeaf },
-      { label: "Zoology", href: "/exams/zoology", icon: IconDna2 },
-    ],
+    children: SUBJECT_IDS.map((id) => ({
+      label: SUBJECTS[id].label,
+      href: `/exams/${id}`,
+      icon: subjectIcons[id],
+    })),
   },
 ]
 
@@ -61,7 +68,10 @@ export function AppSidebar() {
   return (
     <Sidebar variant="inset" className="border-r border-sidebar-border/70">
       <SidebarHeader className="px-4 py-5">
-        <Link href="/" className="rounded-xl p-2 transition-colors hover:bg-sidebar-accent">
+        <Link
+          href="/"
+          className="rounded-xl p-2 transition-colors hover:bg-sidebar-accent"
+        >
           <Logo />
         </Link>
       </SidebarHeader>
@@ -76,7 +86,10 @@ export function AppSidebar() {
 
               return (
                 <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton render={<Link href={item.href} />} isActive={active}>
+                  <SidebarMenuButton
+                    render={<Link href={item.href} />}
+                    isActive={active}
+                  >
                     <Icon />
                     <span>{item.label}</span>
                   </SidebarMenuButton>
@@ -108,10 +121,7 @@ export function AppSidebar() {
       <SidebarFooter className="p-4">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton
-              onClick={() => signOut()}
-              className="text-rose-700 hover:bg-rose-100/70 hover:text-rose-900 dark:text-rose-300 dark:hover:bg-rose-950/40 dark:hover:text-rose-200"
-            >
+            <SidebarMenuButton onClick={() => signOut()} variant="outline">
               <IconLogout />
               <span>Sign Out</span>
             </SidebarMenuButton>

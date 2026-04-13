@@ -7,9 +7,8 @@ import {
   IconTargetArrow,
 } from "@tabler/icons-react"
 
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { linkButtonHero } from "@/lib/button-link-styles"
-import { cn } from "@/lib/utils"
 
 export function DashboardScreen() {
   return (
@@ -17,7 +16,7 @@ export function DashboardScreen() {
       <section className="relative overflow-hidden rounded-3xl border border-primary/20 bg-primary p-6 text-primary-foreground shadow-lg shadow-primary/15 sm:p-8">
         <div className="absolute -top-20 -right-16 size-56 rounded-full bg-primary-foreground/15 blur-2xl" />
         <div className="absolute -bottom-28 left-16 size-64 rounded-full bg-black/10 blur-2xl" />
-        <div className="relative z-10 max-w-2xl space-y-4">
+        <div className="relative z-10 flex max-w-2xl flex-col gap-4">
           <p className="text-xs font-semibold tracking-[0.14em] text-primary-foreground/75 uppercase">
             Daily Challenge
           </p>
@@ -28,13 +27,14 @@ export function DashboardScreen() {
             Take the latest full test and keep your preparation rhythm steady.
             Detailed review data will appear as soon as your attempts are saved.
           </p>
-          <Link
-            href="/exams"
-            className={cn(linkButtonHero, "rounded-2xl")}
+          <Button
+            render={<Link href="/exams" />}
+            variant="secondary"
+            className="w-fit rounded-2xl"
           >
             Open Exams
             <IconArrowRight />
-          </Link>
+          </Button>
         </div>
       </section>
 
@@ -48,7 +48,9 @@ export function DashboardScreen() {
           </CardHeader>
           <CardContent className="pb-6">
             <p className="text-3xl font-semibold tracking-tight">1</p>
-            <p className="mt-1 text-sm text-muted-foreground">Latest full test available</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Latest full test available
+            </p>
           </CardContent>
         </Card>
 
@@ -61,7 +63,9 @@ export function DashboardScreen() {
           </CardHeader>
           <CardContent className="pb-6">
             <p className="text-3xl font-semibold tracking-tight">45m</p>
-            <p className="mt-1 text-sm text-muted-foreground">Recommended daily session</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Recommended daily session
+            </p>
           </CardContent>
         </Card>
 
@@ -74,7 +78,9 @@ export function DashboardScreen() {
           </CardHeader>
           <CardContent className="pb-6">
             <p className="text-3xl font-semibold tracking-tight">Daily</p>
-            <p className="mt-1 text-sm text-muted-foreground">Practice cadence target</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Practice cadence target
+            </p>
           </CardContent>
         </Card>
       </section>

@@ -1,13 +1,18 @@
 "use client"
 
 import { useMemo } from "react"
+import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { IconBell, IconSearch } from "@tabler/icons-react"
+import { IconBell, IconChevronRight } from "@tabler/icons-react"
 
 import { AppSidebar } from "@/components/main/app-sidebar"
+import { SUBJECTS, isSubjectId } from "@/components/main/types"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar"
 
 type AppShellProps = {
   children: React.ReactNode
@@ -17,10 +22,12 @@ type AppShellProps = {
 function titleForPath(pathname: string) {
   if (pathname === "/") return "Dashboard"
   if (pathname === "/exams") return "Exams"
-  if (pathname.startsWith("/exams/physics")) return "Physics"
-  if (pathname.startsWith("/exams/chemistry")) return "Chemistry"
-  if (pathname.startsWith("/exams/botany")) return "Botany"
-  if (pathname.startsWith("/exams/zoology")) return "Zoology"
+
+  const [, first, second] = pathname.split("/")
+  if (first === "exams" && second && isSubjectId(second)) {
+    return SUBJECTS[second].label
+  }
+
   return "Workspace"
 }
 
@@ -28,35 +35,47 @@ export function AppShell({ children, userName }: AppShellProps) {
   const pathname = usePathname()
 
   const title = useMemo(() => titleForPath(pathname), [pathname])
-  const initial = useMemo(() => userName.trim().charAt(0).toUpperCase() || "U", [userName])
+  const subtitle = useMemo(() => {
+    if (pathname === "/") return "Daily progress and planning"
+    if (pathname.startsWith("/exams")) return "Practice tests and review"
+    return "Learning workspace"
+  }, [pathname])
+  const initial = useMemo(
+    () => userName.trim().charAt(0).toUpperCase() || "U",
+    [userName]
+  )
 
   return (
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset className="flex min-h-0 flex-1 flex-col bg-background">
-        <header className="sticky top-0 z-30 shrink-0 border-b border-border/60 bg-background/85 backdrop-blur-xl">
-          <div className="flex h-16 items-center gap-3 px-4 sm:h-20 sm:px-6">
+        <header className="sticky top-0 z-30 shrink-0 border-b border-border/60 bg-background/90 backdrop-blur-xl">
+          <div className="flex h-16 items-center gap-3 px-4 sm:px-6 lg:h-18">
             <SidebarTrigger className="md:hidden" />
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                Cognix Practice
-              </p>
-              <h1 className="truncate text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
-                {title}
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Link
+                  href="/"
+                  className="font-medium transition-colors hover:text-foreground"
+                >
+                  Cognix
+                </Link>
+                <IconChevronRight className="opacity-70" />
+                <span className="truncate">{title}</span>
+              </div>
+              <h1 className="truncate text-lg font-semibold tracking-tight text-foreground sm:text-xl">
+                {subtitle}
               </h1>
             </div>
-            <div className="hidden items-center gap-2 rounded-2xl border border-border/70 bg-card/70 px-3 py-2 lg:flex">
-              <IconSearch className="size-4 text-muted-foreground" />
-              <Input
-                aria-label="Search topics"
-                placeholder="Search topics"
-                className="h-7 w-44 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
-              />
-            </div>
-            <Button size="icon-sm" variant="ghost" className="rounded-full">
+            <Button
+              size="icon-sm"
+              variant="ghost"
+              className="rounded-full"
+              aria-label="Notifications"
+            >
               <IconBell />
             </Button>
-            <div className="grid size-9 place-items-center rounded-full border border-primary/25 bg-primary/15 text-sm font-semibold text-primary">
+            <div className="grid size-9 place-items-center rounded-full border border-border bg-muted text-sm font-semibold text-foreground">
               {initial}
             </div>
           </div>
