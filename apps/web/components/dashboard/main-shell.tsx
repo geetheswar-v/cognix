@@ -1,17 +1,29 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import {
   IconBook,
   IconBrain,
   IconDashboard,
   IconFlask,
   IconInnerShadowTop,
+  IconLogout,
   IconReport,
 } from "@tabler/icons-react"
 
+import { signOut } from "@/lib/auth-client"
 import { Logo } from "@/components/logo"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   Sidebar,
   SidebarContent,
@@ -54,12 +66,31 @@ function isActive(pathname: string, href: string) {
 
 export function MainShell({ children, userName, userEmail }: MainShellProps) {
   const pathname = usePathname()
+  const router = useRouter()
+
+  const initials = userName
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("")
+
+  async function handleSignOut() {
+    await signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          router.push("/sign-in")
+          router.refresh()
+        },
+      },
+    })
+  }
 
   return (
     <SidebarProvider>
       <Sidebar collapsible="icon" variant="sidebar">
         <SidebarHeader className="border-b border-sidebar-border/80">
-          <Logo />
+          <Logo collapseAware />
         </SidebarHeader>
 
         <SidebarContent>
@@ -105,12 +136,38 @@ export function MainShell({ children, userName, userEmail }: MainShellProps) {
         </SidebarContent>
 
         <SidebarFooter>
-          <div className="rounded-2xl border border-sidebar-border bg-sidebar-accent/70 px-3 py-2">
-            <p className="truncate text-sm font-medium text-sidebar-foreground">
-              {userName}
-            </p>
-            <p className="truncate text-xs text-sidebar-foreground/75">{userEmail}</p>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={<button />}
+            >
+              <div className="flex items-center gap-4">
+                <Avatar size="default" className="shrink-0">
+                  <AvatarFallback>{initials || "U"}</AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 text-start group-data-[collapsible=icon]:hidden">
+                  <p className="truncate text-sm font-medium text-sidebar-foreground">
+                    {userName}
+                  </p>
+                  <p className="truncate text-xs text-sidebar-foreground/75">
+                    {userEmail}
+                  </p>
+                </div>
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent side="top" align="end" className="w-56">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>
+                <p className="truncate text-sm font-medium text-foreground">{userName}</p>
+                <p className="truncate text-xs text-muted-foreground">{userEmail}</p>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem variant="destructive" onClick={() => void handleSignOut()}>
+                <IconLogout className="size-4" />
+                Sign out
+              </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </SidebarFooter>
         <SidebarRail />
       </Sidebar>
