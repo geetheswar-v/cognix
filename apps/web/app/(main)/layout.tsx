@@ -1,5 +1,6 @@
 import { getServerSession } from "@/lib/auth"
 import { redirect } from "next/navigation"
+import { MainShell } from "@/components/dashboard/main-shell"
 
 export default async function MainLayout({
   children,
@@ -11,7 +12,9 @@ export default async function MainLayout({
     redirect("/sign-in")
   }
 
-  // Session can be used over all child components if needed (for example sidebar having user info adn on clicking we can iopen setyings and signout option like that)
-
-  return <>{children}</>
+  return (
+    <MainShell userName={session.user.name} userEmail={session.user.email}>
+      {children}
+    </MainShell>
+  )
 }
