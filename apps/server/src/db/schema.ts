@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import { pgTable, text, timestamp, boolean, index, integer, uniqueIndex } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
@@ -118,6 +118,18 @@ export const neetExam = pgTable("neet_exam", {
     index("neet_exam_exam_type_idx").on(table.examType),
     index("neet_exam_scope_subject_idx").on(table.scopeSubject),
     index("neet_exam_scope_chapter_idx").on(table.scopeChapter),
+    index("neet_exam_chapter_scope_status_idx").on(
+      table.examType,
+      table.scopeSubject,
+      table.scopeChapter,
+      table.status,
+      table.createdAt,
+    ),
+    uniqueIndex("neet_exam_active_chapter_generation_uidx")
+      .on(table.scopeSubject, table.scopeChapter)
+      .where(
+        sql`${table.examType} = 'chapter' and ${table.status} in ('queued', 'running') and ${table.scopeSubject} is not null and ${table.scopeChapter} is not null`,
+      ),
   ]);
 
 export const neetExamQuestion = pgTable(

@@ -80,6 +80,7 @@ const GROQ_MAX_RPM_PER_KEY = 15;
 const GROQ_MAX_TPM_PER_KEY = 12_000;
 const GROQ_MIN_INTERVAL_MS = 4100;
 const GROQ_WINDOW_MS = 60_000;
+const ACTIVE_CHAPTER_GENERATION_CONSTRAINT = 'neet_exam_active_chapter_generation_uidx';
 
 let blueprintCache: Blueprint | null = null;
 
@@ -119,6 +120,25 @@ async function ensureLogDir() {
 function sanitizeForLog(value: string, maxLength = 4000) {
   if (value.length <= maxLength) return value;
   return `${value.slice(0, maxLength)}...<truncated>`;
+}
+
+function isConstraintUniqueViolation(error: unknown, constraint: string) {
+  if (!error || typeof error !== 'object') return false;
+
+  const candidate = error as {
+    code?: string;
+    constraint?: string;
+    message?: string;
+    detail?: string;
+  };
+
+  if (candidate.code !== '23505') return false;
+
+  return (
+    candidate.constraint === constraint ||
+    candidate.message?.includes(constraint) === true ||
+    candidate.detail?.includes(constraint) === true
+  );
 }
 
 async function writeStructuredLog(event: string, payload: Record<string, unknown>) {
@@ -675,6 +695,18 @@ async function buildGenerationPlanForSubject(
   }
 
   return plan;
+}
+
+async function findActiveChapterGeneration(params: { subject: string; chapter: string }) {
+  return db.query.neetExam.findFirst({
+    where: and(
+      eq(neetExam.examType, 'chapter'),
+      eq(neetExam.scopeSubject, params.subject),
+      eq(neetExam.scopeChapter, params.chapter),
+      inArray(neetExam.status, ['queued', 'running']),
+    ),
+    orderBy: [desc(neetExam.createdAt)],
+  });
 }
 
 function buildSubjectTargets(subjects: string[], totalQuestions: number): Map<string, number> {
@@ -1270,18 +1302,46 @@ export async function enqueueChapterExamGenerationJob(input: {
   }
 
   const examId = randomUUID();
-  await db.insert(neetExam).values({
-    id: examId,
-    jobId: input.jobId,
-    externalTestId: input.testId,
-    examType: 'chapter',
-    scopeSubject: input.subject,
-    scopeChapter: input.chapter,
-    status: 'running',
-    totalQuestions: input.totalQuestions,
-    startedAt: new Date(),
-    blueprintVersion: 'neet_blueprint.json',
-  });
+
+  try {
+    await db.insert(neetExam).values({
+      id: examId,
+      jobId: input.jobId,
+      externalTestId: input.testId,
+      examType: 'chapter',
+      scopeSubject: input.subject,
+      scopeChapter: input.chapter,
+      status: 'running',
+      totalQuestions: input.totalQuestions,
+      startedAt: new Date(),
+      blueprintVersion: 'neet_blueprint.json',
+    });
+  } catch (error) {
+    if (isConstraintUniqueViolation(error, ACTIVE_CHAPTER_GENERATION_CONSTRAINT)) {
+      const active = await findActiveChapterGeneration({
+        subject: input.subject,
+        chapter: input.chapter,
+      });
+
+      if (active) {
+        await writeStructuredLog('chapter_generation_reused_active', {
+          examId: active.id,
+          jobId: active.jobId,
+          subject: input.subject,
+          chapter: input.chapter,
+        });
+
+        return {
+          examId: active.id,
+          jobId: active.jobId,
+          status: active.status,
+          reused: true,
+        };
+      }
+    }
+
+    throw error;
+  }
 
   const progress: JobProgress = {
     status: 'running',
@@ -1504,6 +1564,77 @@ export async function getSubjectChaptersWithLatestTest(subject: string) {
       latestCreatedAt: latest?.createdAt ?? null,
     };
   });
+}
+
+export async function requestChapterExamForUser(params: {
+  userId: string;
+  subject: string;
+  chapter: string;
+  totalQuestions?: number;
+}) {
+  const attempts = await db.query.neetExamAttempt.findMany({
+    where: and(eq(neetExamAttempt.userId, params.userId), eq(neetExamAttempt.status, 'submitted')),
+    columns: {
+      examId: true,
+    },
+  });
+
+  const attemptedExamIds = new Set(attempts.map((attempt) => attempt.examId));
+
+  const completedChapterExams = await db.query.neetExam.findMany({
+    where: and(
+      eq(neetExam.status, 'completed'),
+      eq(neetExam.examType, 'chapter'),
+      eq(neetExam.scopeSubject, params.subject),
+      eq(neetExam.scopeChapter, params.chapter),
+    ),
+    orderBy: [desc(neetExam.createdAt)],
+  });
+
+  const unattemptedExam = completedChapterExams.find((exam) => !attemptedExamIds.has(exam.id));
+  if (unattemptedExam) {
+    return {
+      status: 'ready' as const,
+      source: 'existing_unattempted' as const,
+      examId: unattemptedExam.id,
+      jobId: null,
+      subject: params.subject,
+      chapter: params.chapter,
+    };
+  }
+
+  const activeGeneration = await findActiveChapterGeneration({
+    subject: params.subject,
+    chapter: params.chapter,
+  });
+
+  if (activeGeneration) {
+    return {
+      status: 'generating' as const,
+      source: 'active_generation' as const,
+      examId: activeGeneration.id,
+      jobId: activeGeneration.jobId,
+      subject: params.subject,
+      chapter: params.chapter,
+    };
+  }
+
+  const queued = await enqueueChapterExamGenerationJob({
+    jobId: randomUUID(),
+    testId: randomUUID(),
+    subject: params.subject,
+    chapter: params.chapter,
+    totalQuestions: params.totalQuestions ?? 15,
+  });
+
+  return {
+    status: 'generating' as const,
+    source: queued.reused ? ('active_generation' as const) : ('queued_generation' as const),
+    examId: queued.examId,
+    jobId: queued.jobId,
+    subject: params.subject,
+    chapter: params.chapter,
+  };
 }
 
 export async function getChapterExamByTestId(testId: string) {

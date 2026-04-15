@@ -9,10 +9,29 @@ import {
   getLatestCompletedExamWithQuestions,
   getLatestAttemptedExams,
   getSubjectChaptersWithLatestTest,
+  requestChapterExamForUser,
   submitNeetExamAnswers,
 } from '../../lib/neet';
 
 export const testsRoutes = new Elysia({ prefix: '/tests' })
+  .macro({
+    userSession: {
+      async resolve({ status, request: { headers } }) {
+        const activeSession = await auth.api.getSession({
+          headers,
+        });
+
+        if (!activeSession) {
+          return status(401);
+        }
+
+        return {
+          user: activeSession.user,
+          session: activeSession.session,
+        };
+      },
+    },
+  })
   .onBeforeHandle(async ({ request, set }) => {
     const session = await auth.api.getSession({
       headers: request.headers,
@@ -122,6 +141,54 @@ export const testsRoutes = new Elysia({ prefix: '/tests' })
   }, {
     params: t.Object({
       subject: t.String(),
+    }),
+  })
+  .post('/subjects/:subject/chapters/:chapter/request', async ({ params, query, set, user }) => {
+    const normalizedSubject = params.subject.toLowerCase().trim();
+    if (!['physics', 'chemistry', 'botany', 'zoology'].includes(normalizedSubject)) {
+      set.status = 400;
+      return {
+        success: false,
+        error: 'Invalid subject',
+      };
+    }
+
+    const chapter = params.chapter.trim();
+    if (!chapter) {
+      set.status = 400;
+      return {
+        success: false,
+        error: 'Invalid chapter',
+      };
+    }
+
+    try {
+      const request = await requestChapterExamForUser({
+        userId: user.id,
+        subject: normalizedSubject,
+        chapter,
+        totalQuestions: query.totalQuestions ?? 15,
+      });
+
+      return {
+        success: true,
+        request,
+      };
+    } catch (error) {
+      set.status = 500;
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to request chapter exam',
+      };
+    }
+  }, {
+    userSession: true,
+    params: t.Object({
+      subject: t.String(),
+      chapter: t.String(),
+    }),
+    query: t.Object({
+      totalQuestions: t.Optional(t.Integer({ minimum: 1, maximum: 15 })),
     }),
   })
   .get('/chapters/:testId', async ({ params, set }) => {
