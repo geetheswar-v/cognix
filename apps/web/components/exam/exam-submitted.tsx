@@ -50,6 +50,9 @@ export function ExamSubmitted({ examId }: ExamSubmittedProps) {
               Your paper has been submitted. You can open review once analysis is ready.
             </p>
             <div className="mt-4 flex gap-2">
+              <Button variant="outline" render={<Link href={`/exam/${examId}`} />}>
+                Reattempt exam
+              </Button>
               <Button variant="outline" render={<Link href="/" />}>
                 Go dashboard
               </Button>
@@ -106,6 +109,9 @@ export function ExamSubmitted({ examId }: ExamSubmittedProps) {
 
           <div className="mt-5 flex flex-wrap gap-2">
             <Button render={<Link href={`/review/${examId}`} />}>Open detailed review</Button>
+            <Button variant="outline" render={<Link href={`/exam/${examId}`} />}>
+              Reattempt exam
+            </Button>
             <Button variant="outline" render={<Link href="/" />}>
               Back to dashboard
             </Button>

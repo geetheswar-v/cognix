@@ -89,6 +89,15 @@ export type SubjectChapter = {
   latestCreatedAt: string | null
 }
 
+export type ChapterExamRequest = {
+  status: "ready" | "generating"
+  source: "existing_unattempted" | "active_generation" | "queued_generation"
+  examId: string | null
+  jobId: string | null
+  subject: string
+  chapter: string
+}
+
 export type ReviewedQuestion = {
   id: string
   questionNumber: number
@@ -195,6 +204,25 @@ export async function fetchSubjectChapters(subject: string) {
   }>(`/api/tests/subjects/${subject}/chapters`)
 
   return payload?.chapters ?? []
+}
+
+export async function requestChapterExam(subject: string, chapter: string, totalQuestions = 15) {
+  const response = await fetch(
+    `/api/tests/subjects/${subject}/chapters/${encodeURIComponent(chapter)}/request?totalQuestions=${totalQuestions}`,
+    {
+      method: "POST",
+      credentials: "same-origin",
+    }
+  )
+
+  const payload = (await response.json()) as unknown
+
+  if (!response.ok || getErrorMessage(payload)) {
+    const error = getErrorMessage(payload) ?? FALLBACK_ERROR_MESSAGE
+    throw new Error(error || FALLBACK_ERROR_MESSAGE)
+  }
+
+  return (payload as { success: true; request: ChapterExamRequest }).request
 }
 
 export async function fetchExamById(examId: string) {

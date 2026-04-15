@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { IconArrowRight, IconReportSearch } from "@tabler/icons-react"
+import { IconArrowRight, IconRefresh, IconReportSearch } from "@tabler/icons-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -81,13 +81,18 @@ export function ReviewList() {
                   <p>Wrong: {attempt.wrongCount}</p>
                   <p>Unattempted: {attempt.unattemptedCount}</p>
                 </div>
-                <Button
-                  className="mt-4"
-                  render={<Link href={`/review/${attempt.examId}`} />}
-                >
-                  <IconReportSearch className="size-4" /> Open review
-                  <IconArrowRight className="size-4" />
-                </Button>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Button
+                    variant="outline"
+                    render={<Link href={`/review/${attempt.examId}`} />}
+                  >
+                    <IconReportSearch className="size-4" /> Open review
+                    <IconArrowRight className="size-4" />
+                  </Button>
+                  <Button render={<Link href={`/exam/${attempt.examId}`} />}>
+                    <IconRefresh className="size-4" /> Reattempt
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}

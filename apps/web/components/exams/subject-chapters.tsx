@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import Link from "next/link"
+import { useCallback, useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import {
   IconArrowRight,
   IconAtom,
@@ -14,8 +14,13 @@ import {
 
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useToast } from "@/components/ui/toast"
 import { cn } from "@/lib/utils"
-import { fetchSubjectChapters, type SubjectChapter } from "@/lib/tests-api"
+import {
+  fetchSubjectChapters,
+  requestChapterExam,
+  type SubjectChapter,
+} from "@/lib/tests-api"
 
 type SubjectChaptersProps = {
   subject: "physics" | "chemistry" | "botany" | "zoology"
@@ -79,22 +84,69 @@ function formatDate(value: string | null) {
 }
 
 export function SubjectChapters({ subject }: SubjectChaptersProps) {
+  const router = useRouter()
+  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(true)
   const [chapters, setChapters] = useState<SubjectChapter[]>([])
+  const [loadingChapter, setLoadingChapter] = useState<string | null>(null)
   const meta = subjectMeta[subject]
 
+  const loadChapters = useCallback(async () => {
+    const payload = await fetchSubjectChapters(subject)
+    setChapters(payload)
+  }, [subject])
+
   useEffect(() => {
+    let active = true
+
     async function load() {
+      setIsLoading(true)
       try {
         const payload = await fetchSubjectChapters(subject)
-        setChapters(payload)
+        if (active) {
+          setChapters(payload)
+        }
       } finally {
-        setIsLoading(false)
+        if (active) {
+          setIsLoading(false)
+        }
       }
     }
 
     void load()
+    return () => {
+      active = false
+    }
   }, [subject])
+
+  const handleRequestChapterExam = useCallback(
+    async (chapterName: string) => {
+      setLoadingChapter(chapterName)
+      try {
+        const request = await requestChapterExam(subject, chapterName)
+        if (request.status === "ready" && request.examId) {
+          router.push(`/exam/${request.examId}`)
+          return
+        }
+
+        toast({
+          kind: "info",
+          title: "Generation started",
+          description: `We're generating a fresh ${subject} exam for ${chapterName}.`,
+        })
+        await loadChapters()
+      } catch (error) {
+        toast({
+          kind: "error",
+          title: "Unable to prepare exam",
+          description: error instanceof Error ? error.message : "Please try again.",
+        })
+      } finally {
+        setLoadingChapter((current) => (current === chapterName ? null : current))
+      }
+    },
+    [loadChapters, router, subject, toast]
+  )
 
   return (
     <div className="space-y-6">
@@ -117,8 +169,8 @@ export function SubjectChapters({ subject }: SubjectChaptersProps) {
           
         </div>
         <p className="mt-3 max-w-3xl text-sm text-muted-foreground">
-          Start available chapter tests instantly. Locked chapters indicate that
-          the latest test has not been generated yet.
+          Start chapter tests instantly. If a chapter has no ready test yet, generate one in a
+          single click.
         </p>
       </section>
 
@@ -157,7 +209,7 @@ export function SubjectChapters({ subject }: SubjectChaptersProps) {
                   <div className="mt-5 flex items-center justify-between gap-2">
                     {!chapter.hasLatestTest ? (
                       <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                        <IconLock className="size-3.5" /> Locked
+                        <IconLock className="size-3.5" /> Not generated yet
                       </span>
                     ) : (
                       <span className="text-xs text-muted-foreground">
@@ -166,15 +218,17 @@ export function SubjectChapters({ subject }: SubjectChaptersProps) {
                     )}
 
                     <Button
-                      disabled={!chapter.hasLatestTest || !chapter.latestExamId}
+                      disabled={loadingChapter === chapter.chapter}
                       className={cn("h-9 px-4", meta.button)}
-                      render={
-                        chapter.hasLatestTest && chapter.latestExamId ? (
-                          <Link href={`/exam/${chapter.latestExamId}`} />
-                        ) : undefined
-                      }
+                      onClick={() => {
+                        void handleRequestChapterExam(chapter.chapter)
+                      }}
                     >
-                      {chapter.hasLatestTest ? "Start test" : "Unavailable"}
+                      {loadingChapter === chapter.chapter
+                        ? "Preparing..."
+                        : chapter.hasLatestTest
+                          ? "Start test"
+                          : "Generate exam"}
                       <IconArrowRight className="size-4" />
                     </Button>
                   </div>
