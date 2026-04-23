@@ -1,0 +1,2 @@
+CREATE INDEX "neet_exam_chapter_scope_status_idx" ON "neet_exam" USING btree ("exam_type","scope_subject","scope_chapter","status","created_at");--> statement-breakpoint
+CREATE UNIQUE INDEX "neet_exam_active_chapter_generation_uidx" ON "neet_exam" USING btree ("scope_subject","scope_chapter") WHERE "neet_exam"."exam_type" = 'chapter' and "neet_exam"."status" in ('queued', 'running') and "neet_exam"."scope_subject" is not null and "neet_exam"."scope_chapter" is not null;

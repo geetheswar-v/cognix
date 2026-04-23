@@ -1,0 +1,641 @@
+{
+  "exam_config": {
+    "total_questions": 180,
+    "subjects": ["physics", "chemistry", "botany", "zoology"]
+  },
+  "blueprint": {
+    "physics": [
+      {
+        "chapter": "Units and Measurements",
+        "questions_allocated": 1,
+        "sub_topics": [
+          "Dimensional analysis",
+          "Errors in measurement",
+          "Significant figures"
+        ]
+      },
+      {
+        "chapter": "Kinematics",
+        "questions_allocated": 2,
+        "sub_topics": [
+          "Motion in a straight line",
+          "Projectile motion",
+          "Relative velocity"
+        ]
+      },
+      {
+        "chapter": "Laws of Motion",
+        "questions_allocated": 3,
+        "sub_topics": [
+          "Newton's laws",
+          "Conservation of momentum",
+          "Friction",
+          "Circular motion dynamics"
+        ]
+      },
+      {
+        "chapter": "Work, Energy and Power",
+        "questions_allocated": 2,
+        "sub_topics": [
+          "Work-energy theorem",
+          "Collisions",
+          "Potential energy of a spring"
+        ]
+      },
+      {
+        "chapter": "Rotational Motion",
+        "questions_allocated": 3,
+        "sub_topics": [
+          "Center of mass",
+          "Torque and angular momentum",
+          "Moment of inertia",
+          "Rolling motion"
+        ]
+      },
+      {
+        "chapter": "Gravitation",
+        "questions_allocated": 2,
+        "sub_topics": [
+          "Kepler's laws",
+          "Acceleration due to gravity",
+          "Escape velocity",
+          "Satellite motion"
+        ]
+      },
+      {
+        "chapter": "Properties of Solids and Fluids",
+        "questions_allocated": 2,
+        "sub_topics": [
+          "Young's modulus",
+          "Bernoulli's principle",
+          "Surface tension",
+          "Viscosity"
+        ]
+      },
+      {
+        "chapter": "Thermodynamics",
+        "questions_allocated": 3,
+        "sub_topics": [
+          "First law of thermodynamics",
+          "Carnot engine",
+          "Isothermal and adiabatic processes"
+        ]
+      },
+      {
+        "chapter": "Kinetic Theory of Gases",
+        "questions_allocated": 1,
+        "sub_topics": ["Ideal gas laws", "Degrees of freedom", "Mean free path"]
+      },
+      {
+        "chapter": "Oscillations and Waves",
+        "questions_allocated": 2,
+        "sub_topics": [
+          "Simple harmonic motion",
+          "Doppler effect",
+          "Standing waves",
+          "Beats"
+        ]
+      },
+      {
+        "chapter": "Electrostatics",
+        "questions_allocated": 4,
+        "sub_topics": [
+          "Coulomb's law",
+          "Electric field and flux",
+          "Gauss's law",
+          "Capacitors and dielectrics"
+        ]
+      },
+      {
+        "chapter": "Current Electricity",
+        "questions_allocated": 4,
+        "sub_topics": [
+          "Ohm's law",
+          "Kirchhoff's laws",
+          "Potentiometer",
+          "Wheatstone bridge"
+        ]
+      },
+      {
+        "chapter": "Magnetic Effects of Current",
+        "questions_allocated": 3,
+        "sub_topics": [
+          "Biot-Savart law",
+          "Ampere's law",
+          "Force on a moving charge",
+          "Galvanometer"
+        ]
+      },
+      {
+        "chapter": "Electromagnetic Induction and AC",
+        "questions_allocated": 3,
+        "sub_topics": [
+          "Faraday's laws",
+          "Lenz's law",
+          "LCR circuits",
+          "Transformers"
+        ]
+      },
+      {
+        "chapter": "Electromagnetic Waves",
+        "questions_allocated": 1,
+        "sub_topics": ["Electromagnetic spectrum", "Displacement current"]
+      },
+      {
+        "chapter": "Ray Optics and Optical Instruments",
+        "questions_allocated": 3,
+        "sub_topics": [
+          "Total internal reflection",
+          "Lens maker's formula",
+          "Prisms",
+          "Microscopes and telescopes"
+        ]
+      },
+      {
+        "chapter": "Wave Optics",
+        "questions_allocated": 1,
+        "sub_topics": [
+          "Young's double slit experiment",
+          "Diffraction",
+          "Polarization"
+        ]
+      },
+      {
+        "chapter": "Dual Nature of Radiation and Matter",
+        "questions_allocated": 2,
+        "sub_topics": [
+          "Photoelectric effect",
+          "Einstein's photoelectric equation",
+          "De Broglie wavelength"
+        ]
+      },
+      {
+        "chapter": "Atoms and Nuclei",
+        "questions_allocated": 2,
+        "sub_topics": [
+          "Bohr model",
+          "Hydrogen spectrum",
+          "Radioactivity",
+          "Mass defect and binding energy"
+        ]
+      },
+      {
+        "chapter": "Semiconductor Electronics",
+        "questions_allocated": 1,
+        "sub_topics": ["p-n junction diodes", "Logic gates", "Rectifiers"]
+      }
+    ],
+    "chemistry": [
+      {
+        "chapter": "Basic Concepts of Chemistry",
+        "questions_allocated": 1,
+        "sub_topics": ["Mole concept", "Stoichiometry", "Limiting reagent"]
+      },
+      {
+        "chapter": "Structure of Atom",
+        "questions_allocated": 2,
+        "sub_topics": [
+          "Quantum numbers",
+          "Bohr's model",
+          "Electronic configuration"
+        ]
+      },
+      {
+        "chapter": "Classification of Elements",
+        "questions_allocated": 1,
+        "sub_topics": [
+          "Periodic trends",
+          "Ionization enthalpy",
+          "Electronegativity"
+        ]
+      },
+      {
+        "chapter": "Chemical Bonding",
+        "questions_allocated": 3,
+        "sub_topics": [
+          "VSEPR theory",
+          "Valence bond theory",
+          "Molecular orbital theory",
+          "Hydrogen bonding"
+        ]
+      },
+      {
+        "chapter": "Thermodynamics",
+        "questions_allocated": 2,
+        "sub_topics": ["Enthalpy", "Entropy", "Gibbs free energy", "Hess's law"]
+      },
+      {
+        "chapter": "Equilibrium",
+        "questions_allocated": 3,
+        "sub_topics": [
+          "Le Chatelier's principle",
+          "Ionization of acids and bases",
+          "pH calculations",
+          "Solubility product"
+        ]
+      },
+      {
+        "chapter": "Redox Reactions",
+        "questions_allocated": 1,
+        "sub_topics": ["Oxidation states", "Balancing redox equations"]
+      },
+      {
+        "chapter": "Solutions",
+        "questions_allocated": 2,
+        "sub_topics": [
+          "Colligative properties",
+          "Raoult's law",
+          "Ideal and non-ideal solutions"
+        ]
+      },
+      {
+        "chapter": "Electrochemistry",
+        "questions_allocated": 2,
+        "sub_topics": [
+          "Nernst equation",
+          "Kohlrausch's law",
+          "Faraday's laws of electrolysis"
+        ]
+      },
+      {
+        "chapter": "Chemical Kinetics",
+        "questions_allocated": 2,
+        "sub_topics": [
+          "Rate of reaction",
+          "Order and molecularity",
+          "Arrhenius equation"
+        ]
+      },
+      {
+        "chapter": "p-Block Elements",
+        "questions_allocated": 3,
+        "sub_topics": [
+          "Group 13 to 18 trends",
+          "Anomalous behavior of first elements",
+          "Important compounds"
+        ]
+      },
+      {
+        "chapter": "d and f Block Elements",
+        "questions_allocated": 2,
+        "sub_topics": [
+          "Transition metals properties",
+          "Lanthanoid contraction",
+          "KMnO4 and K2Cr2O7"
+        ]
+      },
+      {
+        "chapter": "Coordination Compounds",
+        "questions_allocated": 3,
+        "sub_topics": [
+          "IUPAC nomenclature",
+          "Isomerism",
+          "Crystal field theory",
+          "Werner's theory"
+        ]
+      },
+      {
+        "chapter": "General Organic Chemistry",
+        "questions_allocated": 3,
+        "sub_topics": [
+          "Inductive and resonance effects",
+          "Carbocations and carbanions",
+          "Isomerism",
+          "Nomenclature"
+        ]
+      },
+      {
+        "chapter": "Hydrocarbons",
+        "questions_allocated": 3,
+        "sub_topics": [
+          "Alkanes, alkenes, alkynes",
+          "Markovnikov's rule",
+          "Electrophilic substitution in benzene"
+        ]
+      },
+      {
+        "chapter": "Haloalkanes and Haloarenes",
+        "questions_allocated": 2,
+        "sub_topics": [
+          "SN1 and SN2 mechanisms",
+          "Elimination reactions",
+          "Grignard reagents"
+        ]
+      },
+      {
+        "chapter": "Alcohols, Phenols and Ethers",
+        "questions_allocated": 2,
+        "sub_topics": [
+          "Preparation methods",
+          "Acidity of phenols",
+          "Reimer-Tiemann reaction"
+        ]
+      },
+      {
+        "chapter": "Aldehydes, Ketones and Carboxylic Acids",
+        "questions_allocated": 3,
+        "sub_topics": [
+          "Nucleophilic addition",
+          "Aldol condensation",
+          "Cannizzaro reaction",
+          "Acidity of carboxylic acids"
+        ]
+      },
+      {
+        "chapter": "Amines",
+        "questions_allocated": 2,
+        "sub_topics": [
+          "Basicity of amines",
+          "Diazonium salts",
+          "Gabriel phthalimide synthesis"
+        ]
+      },
+      {
+        "chapter": "Biomolecules",
+        "questions_allocated": 2,
+        "sub_topics": [
+          "Carbohydrates",
+          "Proteins and amino acids",
+          "DNA and RNA structures"
+        ]
+      },
+      {
+        "chapter": "Practical Chemistry",
+        "questions_allocated": 1,
+        "sub_topics": ["Detection of functional groups", "Titration principles"]
+      }
+    ],
+    "botany": [
+      {
+        "chapter": "Living World & Biological Classification",
+        "questions_allocated": 3,
+        "sub_topics": [
+          "Taxonomic hierarchy",
+          "Five kingdom classification",
+          "Viruses and viroids"
+        ]
+      },
+      {
+        "chapter": "Plant Kingdom",
+        "questions_allocated": 3,
+        "sub_topics": ["Algae", "Bryophytes", "Pteridophytes", "Gymnosperms"]
+      },
+      {
+        "chapter": "Morphology of Flowering Plants",
+        "questions_allocated": 3,
+        "sub_topics": [
+          "Root, stem, and leaf modifications",
+          "Inflorescence",
+          "Floral parts"
+        ]
+      },
+      {
+        "chapter": "Anatomy of Flowering Plants",
+        "questions_allocated": 3,
+        "sub_topics": [
+          "Meristematic tissues",
+          "Dicot and monocot root/stem anatomy",
+          "Secondary growth"
+        ]
+      },
+      {
+        "chapter": "Cell: The Unit of Life",
+        "questions_allocated": 3,
+        "sub_topics": [
+          "Prokaryotic vs Eukaryotic cells",
+          "Cell organelles",
+          "Cytoskeleton"
+        ]
+      },
+      {
+        "chapter": "Cell Cycle and Cell Division",
+        "questions_allocated": 4,
+        "sub_topics": [
+          "Mitosis phases",
+          "Meiosis I and II",
+          "Significance of meiosis"
+        ]
+      },
+      {
+        "chapter": "Photosynthesis in Higher Plants",
+        "questions_allocated": 3,
+        "sub_topics": [
+          "Light reaction",
+          "Calvin cycle (C3)",
+          "C4 pathway",
+          "Factors affecting photosynthesis"
+        ]
+      },
+      {
+        "chapter": "Respiration in Plants",
+        "questions_allocated": 2,
+        "sub_topics": [
+          "Glycolysis",
+          "Krebs cycle",
+          "Electron transport system (ETS)"
+        ]
+      },
+      {
+        "chapter": "Plant Growth and Development",
+        "questions_allocated": 2,
+        "sub_topics": [
+          "Plant growth regulators (Auxins, Gibberellins, etc.)",
+          "Photoperiodism"
+        ]
+      },
+      {
+        "chapter": "Sexual Reproduction in Flowering Plants",
+        "questions_allocated": 4,
+        "sub_topics": [
+          "Microsporogenesis",
+          "Megasporogenesis",
+          "Pollination mechanisms",
+          "Double fertilization"
+        ]
+      },
+      {
+        "chapter": "Principles of Inheritance and Variation",
+        "questions_allocated": 5,
+        "sub_topics": [
+          "Mendel's laws",
+          "Incomplete dominance and codominance",
+          "Chromosomal theory of inheritance",
+          "Genetic disorders"
+        ]
+      },
+      {
+        "chapter": "Molecular Basis of Inheritance",
+        "questions_allocated": 5,
+        "sub_topics": [
+          "DNA structure",
+          "Replication",
+          "Transcription",
+          "Translation",
+          "Lac operon"
+        ]
+      },
+      {
+        "chapter": "Organisms and Populations",
+        "questions_allocated": 2,
+        "sub_topics": [
+          "Population attributes",
+          "Population growth models",
+          "Species interactions (Mutualism, Competition)"
+        ]
+      },
+      {
+        "chapter": "Ecosystem",
+        "questions_allocated": 2,
+        "sub_topics": ["Energy flow", "Ecological pyramids", "Productivity"]
+      },
+      {
+        "chapter": "Biodiversity and Conservation",
+        "questions_allocated": 1,
+        "sub_topics": [
+          "Patterns of biodiversity",
+          "Loss of biodiversity",
+          "In-situ and ex-situ conservation"
+        ]
+      }
+    ],
+    "zoology": [
+      {
+        "chapter": "Animal Kingdom",
+        "questions_allocated": 5,
+        "sub_topics": [
+          "Basis of classification",
+          "Non-chordates features",
+          "Chordates features"
+        ]
+      },
+      {
+        "chapter": "Structural Organisation in Animals",
+        "questions_allocated": 3,
+        "sub_topics": [
+          "Epithelial tissue",
+          "Connective tissue",
+          "Morphology of Frog"
+        ]
+      },
+      {
+        "chapter": "Biomolecules",
+        "questions_allocated": 3,
+        "sub_topics": [
+          "Enzymes action and factors",
+          "Lipids",
+          "Primary and secondary metabolites"
+        ]
+      },
+      {
+        "chapter": "Breathing and Exchange of Gases",
+        "questions_allocated": 2,
+        "sub_topics": [
+          "Respiratory organs",
+          "Mechanism of breathing",
+          "Transport of oxygen and carbon dioxide"
+        ]
+      },
+      {
+        "chapter": "Body Fluids and Circulation",
+        "questions_allocated": 3,
+        "sub_topics": [
+          "Blood groups",
+          "Cardiac cycle",
+          "ECG",
+          "Double circulation"
+        ]
+      },
+      {
+        "chapter": "Excretory Products and their Elimination",
+        "questions_allocated": 2,
+        "sub_topics": [
+          "Human excretory system",
+          "Urine formation",
+          "Regulation of kidney function"
+        ]
+      },
+      {
+        "chapter": "Locomotion and Movement",
+        "questions_allocated": 2,
+        "sub_topics": ["Sliding filament theory", "Skeletal system", "Joints"]
+      },
+      {
+        "chapter": "Neural Control and Coordination",
+        "questions_allocated": 2,
+        "sub_topics": [
+          "Neuron structure",
+          "Generation and conduction of nerve impulse",
+          "Central nervous system"
+        ]
+      },
+      {
+        "chapter": "Chemical Coordination and Integration",
+        "questions_allocated": 2,
+        "sub_topics": [
+          "Endocrine glands",
+          "Hormones of pituitary, thyroid, and pancreas",
+          "Mechanism of hormone action"
+        ]
+      },
+      {
+        "chapter": "Human Reproduction",
+        "questions_allocated": 4,
+        "sub_topics": [
+          "Male and female reproductive systems",
+          "Spermatogenesis and Oogenesis",
+          "Menstrual cycle",
+          "Embryonic development"
+        ]
+      },
+      {
+        "chapter": "Reproductive Health",
+        "questions_allocated": 3,
+        "sub_topics": [
+          "Contraceptive methods",
+          "MTP",
+          "Sexually transmitted infections (STIs)",
+          "ART (IVF, ZIFT)"
+        ]
+      },
+      {
+        "chapter": "Evolution",
+        "questions_allocated": 4,
+        "sub_topics": [
+          "Evidences of evolution",
+          "Darwinian theory",
+          "Hardy-Weinberg principle",
+          "Human evolution"
+        ]
+      },
+      {
+        "chapter": "Human Health and Disease",
+        "questions_allocated": 4,
+        "sub_topics": [
+          "Common diseases (Malaria, Typhoid, etc.)",
+          "Innate and acquired immunity",
+          "HIV and AIDS",
+          "Cancer"
+        ]
+      },
+      {
+        "chapter": "Microbes in Human Welfare",
+        "questions_allocated": 2,
+        "sub_topics": [
+          "Microbes in household products",
+          "Sewage treatment",
+          "Biocontrol agents"
+        ]
+      },
+      {
+        "chapter": "Biotechnology: Principles and Processes",
+        "questions_allocated": 4,
+        "sub_topics": [
+          "Recombinant DNA technology",
+          "Restriction enzymes",
+          "Cloning vectors",
+          "PCR"
+        ]
+      }
+    ]
+  }
+}

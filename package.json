@@ -1,0 +1,8 @@
+{
+  "name": "cognix",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}
